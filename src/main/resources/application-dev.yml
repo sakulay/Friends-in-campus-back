@@ -97,9 +97,11 @@ security:
   # 无需认证的请求路径
   ignore-urls:
     - /api/v1/auth/login/**       # 登录接口(账号密码登录、手机验证码登录和微信登录)
+    - /api/v1/auth/app/login/**
     - /api/v1/auth/captcha        # 验证码获取接口
     - /api/v1/auth/refresh-token  # 刷新令牌接口
     - /ws/**                      # WebSocket接口
+    - /api/v1/appUsers/**         # app用户接口
   # 不走 Spring Security 过滤器链的请求路径(一般是静态资源)
   unsecured-urls:
     - ${springdoc.swagger-ui.path}
@@ -172,6 +174,7 @@ springdoc:
         - com.youlai.boot.shared.auth.controller
         - com.youlai.boot.shared.file.controller
         - com.youlai.boot.shared.codegen.controller
+        - com.youlai.boot.app.controller
   default-flat-param-object: true
 
 # knife4j 接口文档配置

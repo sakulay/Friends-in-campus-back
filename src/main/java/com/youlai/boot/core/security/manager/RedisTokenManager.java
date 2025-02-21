@@ -26,6 +26,7 @@ public class RedisTokenManager implements TokenManager {
         return null;
     }
 
+
     /**
      * 解析令牌
      *

@@ -11,13 +11,16 @@ import com.youlai.boot.core.security.extension.sms.SmsAuthenticationProvider;
 import com.youlai.boot.core.security.extension.wechat.WechatAuthenticationProvider;
 import com.youlai.boot.core.security.filter.CaptchaValidationFilter;
 import com.youlai.boot.core.security.filter.JwtAuthenticationFilter;
+import com.youlai.boot.core.security.service.AppUserDetailsService;
 import com.youlai.boot.core.security.service.SysUserDetailsService;
 import com.youlai.boot.core.security.manager.JwtTokenManager;
 import com.youlai.boot.system.service.ConfigService;
 import com.youlai.boot.system.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
@@ -53,9 +56,11 @@ public class SecurityConfig {
     private final UserService userService;
     private final SysUserDetailsService userDetailsService;
 
+    private final AppUserDetailsService appUserDetailsService;
     private final CodeGenerator codeGenerator;
     private final ConfigService configService;
     private final SecurityProperties securityProperties;
+
 
     /**
      * 配置安全过滤链 SecurityFilterChain
@@ -125,6 +130,17 @@ public class SecurityConfig {
     }
 
     /**
+     * app默认密码认证的 Provider
+     */
+    @Bean
+    public DaoAuthenticationProvider appDaoAuthenticationProvider() {
+        DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
+        daoAuthenticationProvider.setPasswordEncoder(passwordEncoder);
+        daoAuthenticationProvider.setUserDetailsService(appUserDetailsService);
+        return daoAuthenticationProvider;
+    }
+
+    /**
      * 微信认证 Provider
      */
     @Bean
@@ -144,7 +160,8 @@ public class SecurityConfig {
     /**
      * 认证管理器
      */
-    @Bean
+    @Bean("authenticationManager")
+    @Primary
     public AuthenticationManager authenticationManager(
             DaoAuthenticationProvider daoAuthenticationProvider,
             WechatAuthenticationProvider weChatAuthenticationProvider,
@@ -154,6 +171,19 @@ public class SecurityConfig {
                 daoAuthenticationProvider,
                 weChatAuthenticationProvider,
                 smsAuthenticationProvider
+        );
+    }
+
+    /**
+     * app认证管理器
+     */
+    @Bean
+    @Qualifier("appAuthenticationManager")
+    public AuthenticationManager appAuthenticationManager(
+            DaoAuthenticationProvider appDaoAuthenticationProvider
+    ) {
+        return new ProviderManager(
+                appDaoAuthenticationProvider
         );
     }
 }

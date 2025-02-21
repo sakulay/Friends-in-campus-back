@@ -22,6 +22,8 @@ import com.youlai.boot.shared.sms.enums.SmsTypeEnum;
 import com.youlai.boot.shared.sms.service.SmsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -46,8 +48,13 @@ import java.util.concurrent.TimeUnit;
 public class AuthServiceImpl implements AuthService {
 
     private final AuthenticationManager authenticationManager;
+    @Autowired
+    @Qualifier("appAuthenticationManager")
+    private AuthenticationManager appAuthenticationManager;
     private final TokenManager tokenManager;
-
+    @Autowired
+    @Qualifier("appJwtTokenManger")
+    private TokenManager appTokenManger;
     private final Font captchaFont;
     private final CaptchaProperties captchaProperties;
     private final CodeGenerator codeGenerator;
@@ -56,7 +63,7 @@ public class AuthServiceImpl implements AuthService {
     private final RedisTemplate<String, Object> redisTemplate;
 
     /**
-     * 用户名密码登录
+     * 系统用户名密码登录
      *
      * @param username 用户名
      * @param password 密码
@@ -74,6 +81,30 @@ public class AuthServiceImpl implements AuthService {
         // 3. 认证成功后生成 JWT 令牌，并存入 Security 上下文，供登录日志 AOP 使用（已认证）
         AuthenticationToken authenticationTokenResponse =
                 tokenManager.generateToken(authentication);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        log.info(String.valueOf(authenticationTokenResponse));
+        return authenticationTokenResponse;
+    }
+
+    /**
+     * APP用户名密码登录
+     *
+     * @param username 用户名
+     * @param password 密码
+     * @return 访问令牌
+     */
+    @Override
+    public AuthenticationToken appLogin(String username, String password) {
+        // 1. 创建用于密码认证的令牌（未认证）
+        UsernamePasswordAuthenticationToken authenticationToken =
+                new UsernamePasswordAuthenticationToken(username.trim(), password);
+
+        // 2. 执行认证（认证中）
+        Authentication authentication = appAuthenticationManager.authenticate(authenticationToken);
+
+        // 3. 认证成功后生成 JWT 令牌，并存入 Security 上下文，供登录日志 AOP 使用（已认证）
+        AuthenticationToken authenticationTokenResponse =
+                appTokenManger.generateToken(authentication);
         SecurityContextHolder.getContext().setAuthentication(authentication);
         log.info(String.valueOf(authenticationTokenResponse));
         return authenticationTokenResponse;

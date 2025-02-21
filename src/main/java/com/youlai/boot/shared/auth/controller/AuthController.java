@@ -47,6 +47,18 @@ public class AuthController {
         return Result.success(authenticationToken);
     }
 
+    @Operation(summary = "app账号密码登录")
+    @PostMapping("/app/login")
+    @Log(value = "登录", module = LogModuleEnum.LOGIN)
+    public Result<AuthenticationToken> appLogin(
+            @Parameter(description = "用户名", example = "admin") @RequestParam String username,
+            @Parameter(description = "密码", example = "123456") @RequestParam String password
+    ) {
+        log.info("appLogin: "+username +" "+ password);
+        AuthenticationToken authenticationToken = authService.appLogin(username, password);
+        return Result.success(authenticationToken);
+    }
+
     @Operation(summary = "注销登录")
     @DeleteMapping("/logout")
     @Log(value = "注销", module = LogModuleEnum.LOGIN)

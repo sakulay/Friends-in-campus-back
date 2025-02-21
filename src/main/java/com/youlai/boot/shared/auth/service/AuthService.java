@@ -19,7 +19,7 @@ public interface AuthService {
      * @return 登录结果
      */
     AuthenticationToken login(String username, String password);
-
+    AuthenticationToken appLogin(String username, String password);
     /**
      * 登出
      */

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youlai.boot.app.mapper.AppUserMapper">
+
+    <!-- 获取用户分页列表 -->
+    <select id="getAppUserPage" resultType="com.youlai.boot.app.model.vo.AppUserVO">
+        SELECT
+                user_id,
+                username,
+                email,
+                password,
+                avatar,
+                create_time,
+                create_by,
+                update_time,
+                update_by,
+                is_deleted
+        FROM
+            app_user
+        <where>
+        </where>
+    </select>
+    <select id="getUserAuthInfo" resultMap="AppAuthMap">
+        SELECT
+            user_id userId,
+            username,
+            password
+        From app_user
+        <where>
+            username = #{username}
+        </where>
+    </select>
+
+    <resultMap id="AppAuthMap" type="com.youlai.boot.app.model.dto.AppUserAuthInfo">
+        <id property="userId" column="userId" jdbcType="BIGINT"/>
+        <result property="username" column="username" jdbcType="VARCHAR"/>
+        <result property="password" column="password" jdbcType="VARCHAR"/>
+    </resultMap>
+
+</mapper>
