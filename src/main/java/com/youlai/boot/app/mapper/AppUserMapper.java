@@ -26,5 +26,12 @@ public interface AppUserMapper extends BaseMapper<AppUser> {
      */
     Page<AppUserVO> getAppUserPage(Page<AppUserVO> page, AppUserQuery queryParams);
 
-    AppUserAuthInfo getUserAuthInfo(String username);
+    /**
+     * 根据学生号获取用户信息
+     * @param studentId
+     * @return
+     */
+    AppUserAuthInfo getUserAuthInfo(String studentId);
+
+
 }

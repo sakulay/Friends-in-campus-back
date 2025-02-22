@@ -16,6 +16,7 @@ public enum LogModuleEnum {
 
     EXCEPTION("异常"),
     LOGIN("登录"),
+    REGITSET("注册"),
     USER("用户"),
     DEPT("部门"),
     ROLE("角色"),

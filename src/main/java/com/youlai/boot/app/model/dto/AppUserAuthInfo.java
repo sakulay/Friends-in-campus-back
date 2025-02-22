@@ -13,19 +13,24 @@ import java.util.Set;
 @Data
 public class AppUserAuthInfo {
 
-    /**
-     * 用户ID
-     */
-    private Long userId;
 
     /**
-     * 用户名
+     * 学号
      */
-    private String username;
+    private Long studentId;
 
     /**
      * 用户密码
      */
     private String password;
+    /**
+     * 认证状态 0-未认证、1-已认证
+     */
+    private int authStatus;
+
+    /**
+     * 认证身份图片
+     */
+    private String authInfo;
 
 }

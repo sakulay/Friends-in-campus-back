@@ -25,18 +25,25 @@ public class AppUserDetailsService implements UserDetailsService {
     private final AppUserService userService;
 
     /**
-     * 根据用户名获取用户信息
+     * 根据学生号获取用户信息
      *
-     * @param username 用户名
+     * @param studentId 学生号
      * @return 用户信息
      * @throws UsernameNotFoundException 用户名未找到异常
      */
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(String studentId) throws UsernameNotFoundException {
         try {
-            AppUserAuthInfo userAuthInfo = userService.getUserAuthInfo(username);
-            if (userAuthInfo == null) {
-                throw new UsernameNotFoundException(username);
+            AppUserAuthInfo userAuthInfo = userService.getUserAuthInfo(studentId);
+            //用户信息不存在，或者账号未认证
+            if (userAuthInfo == null ) {
+                log.info("用户信息不存在，学号: {}", studentId);
+                throw new UsernameNotFoundException(studentId);
+            }
+            log.error("用户信息不存在，学号: {}", studentId);
+            if (userAuthInfo.getAuthStatus() == 0) {
+                log.error("用户未认证，学号: {}", studentId);
+                throw new UsernameNotFoundException(studentId);
             }
             return new AppUserDetails(userAuthInfo);
         } catch (Exception e) {

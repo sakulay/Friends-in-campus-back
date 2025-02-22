@@ -5,6 +5,9 @@ import cn.hutool.captcha.CaptchaUtil;
 import cn.hutool.captcha.generator.CodeGenerator;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
+import com.youlai.boot.app.model.dto.AppUserAuthInfo;
+import com.youlai.boot.app.model.form.AppUserForm;
+import com.youlai.boot.app.service.AppUserService;
 import com.youlai.boot.common.constant.RedisConstants;
 import com.youlai.boot.common.constant.SecurityConstants;
 import com.youlai.boot.common.exception.BusinessException;
@@ -58,7 +61,7 @@ public class AuthServiceImpl implements AuthService {
     private final Font captchaFont;
     private final CaptchaProperties captchaProperties;
     private final CodeGenerator codeGenerator;
-
+    private final AppUserService appUserService;
     private final SmsService smsService;
     private final RedisTemplate<String, Object> redisTemplate;
 
@@ -108,6 +111,24 @@ public class AuthServiceImpl implements AuthService {
         SecurityContextHolder.getContext().setAuthentication(authentication);
         log.info(String.valueOf(authenticationTokenResponse));
         return authenticationTokenResponse;
+    }
+
+    /**
+     * app用户注册
+     * @param appUserForm 需要的注册信息：学号、密码、认证信息（证明学生身份的图片）
+     */
+    @Override
+    public void appUserRegister(AppUserForm appUserForm) {
+        // 1. 根据学号检查，是否已经注册 或 已经申请过注册
+        AppUserAuthInfo appUserAuthInfo = appUserService.getUserAuthInfo(String.valueOf(appUserForm.getStudentId()));
+        if(appUserAuthInfo != null) {
+            // 已提交注册申请，请勿重复注册
+            if(appUserAuthInfo.getAuthStatus() == 0) {}
+            // 已经注册，请勿重复注册
+            else {}
+        }
+        // 2.未注册过或未提交过申请，进行注册
+        appUserService.register(appUserForm);
     }
 
     /**

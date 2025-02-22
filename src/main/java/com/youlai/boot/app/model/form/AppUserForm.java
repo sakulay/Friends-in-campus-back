@@ -9,41 +9,35 @@ import java.time.LocalDateTime;
 import jakarta.validation.constraints.*;
 
 /**
- * 用户表单对象
+ * app_user ，存储用户的基本信息及认证信息表单对象
  *
  * @author yuyu
- * @since 2025-02-20 22:03
+ * @since 2025-02-22 14:31
  */
 @Getter
 @Setter
-@Schema(description = "用户表单对象")
+@Schema(description = "app_user ，存储用户的基本信息及认证信息表单对象")
 public class AppUserForm implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
 
-    @Schema(description = "用户唯一ID")
-    @NotNull(message = "用户唯一ID不能为空")
-    private Integer userId;
+    @Schema(description = "学号，唯一标识")
+    @NotNull(message = "学号，唯一标识不能为空")
+    private Long studentId;
 
-    @Schema(description = "用户名")
-    @NotBlank(message = "用户名不能为空")
-    @Size(max=50, message="用户名长度不能超过50个字符")
-    private String username;
-
-    @Schema(description = "用户邮箱")
-    @NotBlank(message = "用户邮箱不能为空")
-    @Size(max=100, message="用户邮箱长度不能超过100个字符")
-    private String email;
-
-    @Schema(description = "用户密码（加密存储）")
-    @NotBlank(message = "用户密码（加密存储）不能为空")
-    @Size(max=255, message="用户密码（加密存储）长度不能超过255个字符")
+    @Schema(description = "用户密码")
+    @NotBlank(message = "用户密码不能为空")
+    @Size(max=255, message="用户密码长度不能超过255个字符")
     private String password;
 
-    @Schema(description = "用户头像URL")
-    @Size(max=255, message="用户头像URL长度不能超过255个字符")
-    private String avatar;
+    @Schema(description = "认证状态，0-未认证，1-已认证")
+    private Integer authStatus;
+
+    @Schema(description = "认证信息（如认证图片的URL）")
+    @NotBlank(message = "认证信息（如认证图片的URL）不能为空")
+    @Size(max=255, message="认证信息（如认证图片的URL）长度不能超过255个字符")
+    private String authInfo;
 
     @Schema(description = "创建时间")
     private LocalDateTime createTime;
@@ -56,9 +50,6 @@ public class AppUserForm implements Serializable {
 
     @Schema(description = "修改人ID")
     private Long updateBy;
-
-    @Schema(description = "是否删除（1-删除，0-未删除）")
-    private Integer isDeleted;
 
 
 }

@@ -1,5 +1,7 @@
 package com.youlai.boot.shared.auth.controller;
 
+import com.youlai.boot.app.model.form.AppUserForm;
+import com.youlai.boot.app.service.AppUserService;
 import com.youlai.boot.common.enums.LogModuleEnum;
 import com.youlai.boot.common.result.Result;
 import com.youlai.boot.shared.auth.service.AuthService;
@@ -27,7 +29,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
-
+    private final AppUserService appUserService;
     @Operation(summary = "获取登录验证码")
     @GetMapping("/captcha")
     public Result<CaptchaInfo> getCaptcha() {
@@ -51,12 +53,23 @@ public class AuthController {
     @PostMapping("/app/login")
     @Log(value = "登录", module = LogModuleEnum.LOGIN)
     public Result<AuthenticationToken> appLogin(
-            @Parameter(description = "用户名", example = "admin") @RequestParam String username,
+            @Parameter(description = "用户名", example = "admin") @RequestParam String studentId,
             @Parameter(description = "密码", example = "123456") @RequestParam String password
     ) {
-        log.info("appLogin: "+username +" "+ password);
-        AuthenticationToken authenticationToken = authService.appLogin(username, password);
+        log.info("appLogin: "+studentId +" "+ password);
+        AuthenticationToken authenticationToken = authService.appLogin(studentId, password);
         return Result.success(authenticationToken);
+    }
+
+    @Operation(summary = "app账号注册认证")
+    @PostMapping("/app/register")
+    @Log(value = "注册", module = LogModuleEnum.REGITSET)
+    public Result<String> appRegister(
+            @RequestBody AppUserForm appUserForm
+            ) {
+        log.info("学生注册: "+appUserForm.getStudentId() +" "+ appUserForm.getPassword());
+        appUserService.register(appUserForm);
+        return Result.success("已提交注册，请等待管理员审核");
     }
 
     @Operation(summary = "注销登录")

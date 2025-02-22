@@ -1,6 +1,8 @@
 package com.youlai.boot.app.service.impl;
 
 import com.youlai.boot.app.model.dto.AppUserAuthInfo;
+import com.youlai.boot.common.exception.BusinessException;
+import com.youlai.boot.common.result.ResultCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -82,6 +84,7 @@ public class AppUserServiceImpl extends ServiceImpl<AppUserMapper, AppUser> impl
      */
     @Override
     public boolean updateAppUser(Long id,AppUserForm formData) {
+        formData.setPassword(new BCryptPasswordEncoder().encode(formData.getPassword()));
         AppUser entity = appUserConverter.toEntity(formData);
         return this.updateById(entity);
     }
@@ -102,13 +105,35 @@ public class AppUserServiceImpl extends ServiceImpl<AppUserMapper, AppUser> impl
         return this.removeByIds(idList);
     }
 
+    /**
+     * 根据学号获取用户信息
+     * @param studentId
+     * @return
+     */
     @Override
-    public AppUserAuthInfo getUserAuthInfo(String username) {
-        AppUserAuthInfo userAuthInfo = this.baseMapper.getUserAuthInfo(username);
-        String password = userAuthInfo.getPassword();
-        password = new BCryptPasswordEncoder().encode(password);
-        userAuthInfo.setPassword(password);
+    public AppUserAuthInfo getUserAuthInfo(String studentId) {
+        AppUserAuthInfo userAuthInfo = this.baseMapper.getUserAuthInfo(studentId);
+        if(userAuthInfo != null) {
+            String password = userAuthInfo.getPassword();
+            password = new BCryptPasswordEncoder().encode(password);
+            userAuthInfo.setPassword(password);
+        }
         return userAuthInfo;
+    }
+    @Override
+    public void register(AppUserForm appUserForm) {
+        appUserForm
+                .setPassword(new BCryptPasswordEncoder().encode(appUserForm.getPassword()));
+        // 1. 根据学号检查，是否已经注册 或 已经申请过注册
+        AppUserAuthInfo appUserAuthInfo = getUserAuthInfo(String.valueOf(appUserForm.getStudentId()));
+        if(appUserAuthInfo != null) {
+            // 已提交注册申请，请勿重复注册
+            if(appUserAuthInfo.getAuthStatus() == 0) throw new BusinessException(ResultCode.REGISTRATION_HAS_APPLIED);
+            // 已经注册，请勿重复注册
+            else throw new BusinessException(ResultCode.USER_ALREADY_REGISTERED);
+        }
+        // 2.未注册过或未提交过申请，进行注册
+        this.baseMapper.insert(appUserConverter.toEntity(appUserForm));
     }
 
 }

@@ -57,5 +57,16 @@ public interface AppUserService extends IService<AppUser> {
      */
     boolean deleteAppUsers(String ids);
 
-    AppUserAuthInfo getUserAuthInfo(String username);
+    /**
+     * 根据学号获取用户信息
+     * @param studentId
+     * @return
+     */
+    AppUserAuthInfo getUserAuthInfo(String studentId);
+
+    /**
+     * 学生注册
+     * @param appUserForm 需要的注册信息：学号、密码、认证信息（证明学生身份的图片）
+     */
+    void register(AppUserForm appUserForm);
 }

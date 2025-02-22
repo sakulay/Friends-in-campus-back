@@ -29,19 +29,23 @@ import java.util.stream.Collectors;
 public class AppUserDetails implements UserDetails {
 
     /**
-     * 用户ID
+     * 学号
      */
-    private Long userId;
+    private String studentId;
 
     /**
-     * 用户名
-     */
-    private String username;
-
-    /**
-     * 密码
+     * 用户密码
      */
     private String password;
+    /**
+     * 认证状态 0-未认证、1-已认证
+     */
+    private int authStatus;
+
+    /**
+     * 认证身份图片
+     */
+    private String authInfo;
 
     /**
      * 用户角色权限集合
@@ -54,9 +58,10 @@ public class AppUserDetails implements UserDetails {
      * @param user 用户认证信息对象 {@link UserAuthInfo}
      */
     public AppUserDetails(AppUserAuthInfo user) {
-        this.userId = user.getUserId();
-        this.username = user.getUsername();
+        this.studentId = user.getStudentId().toString();
         this.password = user.getPassword();
+        this.authStatus = user.getAuthStatus();
+//        this.authInfo = user.getAuthInfo();
         // 初始化角色权限集合
 //        this.authorities = CollectionUtil.isNotEmpty(user.getRoles())
 //                ? user.getRoles().stream()
@@ -79,7 +84,7 @@ public class AppUserDetails implements UserDetails {
 
     @Override
     public String getUsername() {
-        return this.username;
+        return this.studentId;
     }
 
 //    @Override

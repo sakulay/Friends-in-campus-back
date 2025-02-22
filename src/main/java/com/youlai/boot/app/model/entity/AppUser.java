@@ -1,44 +1,50 @@
 package com.youlai.boot.app.model.entity;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.io.Serial;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.youlai.boot.common.base.BaseEntity;
 
 /**
- * 用户实体对象
+ * app_user ，存储用户的基本信息及认证信息实体对象
  *
  * @author yuyu
- * @since 2025-02-20 22:03
+ * @since 2025-02-22 14:31
  */
 @Getter
 @Setter
 @TableName("app_user")
-public class AppUser extends BaseEntity {
+public class AppUser implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
     /**
-     * 用户唯一ID
+     * 学号，唯一标识
      */
-    private Integer userId;
+    @TableId(value = "student_id") // 指定 student_id 作为主键
+    private Long studentId;
     /**
-     * 用户名
-     */
-    private String username;
-    /**
-     * 用户邮箱
-     */
-    private String email;
-    /**
-     * 用户密码（加密存储）
+     * 用户密码
      */
     private String password;
     /**
-     * 用户头像URL
+     * 认证状态，0-未认证，1-已认证
      */
-    private String avatar;
+    private Integer authStatus;
+    /**
+     * 认证信息（如认证图片的URL）
+     */
+    private String authInfo;
     /**
      * 创建人ID
      */
@@ -48,7 +54,19 @@ public class AppUser extends BaseEntity {
      */
     private Long updateBy;
     /**
-     * 是否删除（1-删除，0-未删除）
+     * 创建时间
      */
-    private Integer isDeleted;
+    @TableField(fill = FieldFill.INSERT)
+    @JsonInclude(value = JsonInclude.Include.NON_NULL)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime createTime;
+
+    /**
+     * 更新时间
+     */
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    @JsonInclude(value = JsonInclude.Include.NON_NULL)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime updateTime;
+
 }

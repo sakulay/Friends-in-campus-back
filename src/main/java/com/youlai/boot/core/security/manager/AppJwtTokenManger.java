@@ -70,8 +70,7 @@ public class AppJwtTokenManger implements TokenManager{
         JWT jwt = JWTUtil.parseToken(token);
         JSONObject payloads = jwt.getPayloads();
         AppUserDetails userDetails = new AppUserDetails();
-        userDetails.setUserId(payloads.getLong(JwtClaimConstants.USER_ID)); //用户ID
-        userDetails.setUsername(payloads.getStr(JWTPayload.SUBJECT)); // 用户名
+        userDetails.setStudentId(payloads.getStr(JwtClaimConstants.STUDENT_ID)); //用户ID
 
         return new UsernamePasswordAuthenticationToken(userDetails, "");
     }
@@ -136,7 +135,7 @@ public class AppJwtTokenManger implements TokenManager{
     private String generateToken(Authentication authentication, int ttl) {
         AppUserDetails appUserDetails = (AppUserDetails) authentication.getPrincipal();
         Map<String, Object> payload = new HashMap<>();
-        payload.put(JwtClaimConstants.USER_ID, appUserDetails.getUserId()); // 用户ID
+        payload.put(JwtClaimConstants.STUDENT_ID, appUserDetails.getStudentId()); // 学生ID
 
         Date now = new Date();
         payload.put(JWTPayload.ISSUED_AT, now);

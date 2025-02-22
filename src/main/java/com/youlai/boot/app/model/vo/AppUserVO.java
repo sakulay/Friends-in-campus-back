@@ -9,29 +9,27 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 /**
- * 用户视图对象
+ * app_user ，存储用户的基本信息及认证信息视图对象
  *
  * @author yuyu
- * @since 2025-02-20 22:03
+ * @since 2025-02-22 19:22
  */
 @Getter
 @Setter
-@Schema( description = "用户视图对象")
+@Schema( description = "app_user ，存储用户的基本信息及认证信息视图对象")
 public class AppUserVO implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
 
-    @Schema(description = "用户唯一ID")
-    private Integer userId;
-    @Schema(description = "用户名")
-    private String username;
-    @Schema(description = "用户邮箱")
-    private String email;
-    @Schema(description = "用户密码（加密存储）")
+    @Schema(description = "学号，唯一标识")
+    private Long studentId;
+    @Schema(description = "用户密码")
     private String password;
-    @Schema(description = "用户头像URL")
-    private String avatar;
+    @Schema(description = "认证状态，0-未认证，1-已认证")
+    private Integer authStatus;
+    @Schema(description = "认证信息（如认证图片的URL）")
+    private String authInfo;
     @Schema(description = "创建时间")
     private LocalDateTime createTime;
     @Schema(description = "创建人ID")
@@ -40,6 +38,4 @@ public class AppUserVO implements Serializable {
     private LocalDateTime updateTime;
     @Schema(description = "修改人ID")
     private Long updateBy;
-    @Schema(description = "是否删除（1-删除，0-未删除）")
-    private Integer isDeleted;
 }

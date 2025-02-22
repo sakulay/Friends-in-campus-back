@@ -1,5 +1,6 @@
 package com.youlai.boot.shared.auth.service;
 
+import com.youlai.boot.app.model.form.AppUserForm;
 import com.youlai.boot.shared.auth.model.CaptchaInfo;
 import com.youlai.boot.core.security.model.AuthenticationToken;
 
@@ -48,6 +49,11 @@ public interface AuthService {
      */
     AuthenticationToken loginByWechat(String code);
 
+    /**
+     * 学生注册
+     * @param appUserForm 需要的注册信息：学号、密码、认证信息（证明学生身份的图片）
+     */
+    void appUserRegister(AppUserForm appUserForm);
     /**
      * 发送短信验证码
      *
