@@ -4,7 +4,9 @@ import cn.hutool.core.util.StrUtil;
 import com.youlai.boot.common.constant.SecurityConstants;
 import com.youlai.boot.common.result.ResultCode;
 import com.youlai.boot.common.util.ResponseUtils;
+import com.youlai.boot.core.security.manager.AppJwtTokenManger;
 import com.youlai.boot.core.security.manager.JwtTokenManager;
+import com.youlai.boot.core.security.manager.TokenManager;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,10 +27,11 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenManager jwtTokenService;
+    private final AppJwtTokenManger appJwtTokenService;
 
-
-    public JwtAuthenticationFilter(JwtTokenManager jwtTokenService) {
+    public JwtAuthenticationFilter(JwtTokenManager jwtTokenService, AppJwtTokenManger appJwtTokenService) {
         this.jwtTokenService = jwtTokenService;
+        this.appJwtTokenService = appJwtTokenService;
     }
 
 
@@ -42,18 +45,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String token = request.getHeader(HttpHeaders.AUTHORIZATION);
         try {
-            if (StrUtil.isNotBlank(token) && token.startsWith(SecurityConstants.JWT_TOKEN_PREFIX)) {
-                // 去除 Bearer 前缀
-                token = token.substring(SecurityConstants.JWT_TOKEN_PREFIX.length());
-                // 校验 JWT Token ，包括验签和是否过期
-                boolean isValidate = jwtTokenService.validateToken(token);
-                if (!isValidate) {
-                    ResponseUtils.writeErrMsg(response, ResultCode.ACCESS_TOKEN_INVALID);
-                    return;
+            if (StrUtil.isNotBlank(token)) {
+                if (token.startsWith(SecurityConstants.JWT_TOKEN_PREFIX)) {
+                    token = token.substring(SecurityConstants.JWT_TOKEN_PREFIX.length());
+                    // 处理 Web 端 JWT
+                    processToken(token, jwtTokenService, response);
+                } else if (token.startsWith(SecurityConstants.APP_JWT_TOKEN_PREFIX)) {
+                    token = token.substring(SecurityConstants.APP_JWT_TOKEN_PREFIX.length());
+                    // 处理 App 端 JWT
+                    processToken(token, appJwtTokenService, response);
                 }
-                // 将 Token 解析为 Authentication 对象，并设置到 Spring Security 上下文中
-                Authentication authentication = jwtTokenService.parseToken(token);
-                SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         } catch (Exception e) {
             SecurityContextHolder.clearContext();
@@ -62,5 +63,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
         // Token有效或无Token时继续执行过滤链
         filterChain.doFilter(request, response);
+    }
+
+    /**
+     * 通用 Token 处理逻辑
+     */
+    private void processToken(String token, TokenManager tokenManager, HttpServletResponse response) throws IOException {
+        boolean isValid = tokenManager.validateToken(token);
+        if (!isValid) {
+            ResponseUtils.writeErrMsg(response, ResultCode.ACCESS_TOKEN_INVALID);
+            return;
+        }
+        Authentication authentication = tokenManager.parseToken(token);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 }

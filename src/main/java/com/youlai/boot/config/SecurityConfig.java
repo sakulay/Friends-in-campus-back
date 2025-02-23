@@ -11,6 +11,7 @@ import com.youlai.boot.core.security.extension.sms.SmsAuthenticationProvider;
 import com.youlai.boot.core.security.extension.wechat.WechatAuthenticationProvider;
 import com.youlai.boot.core.security.filter.CaptchaValidationFilter;
 import com.youlai.boot.core.security.filter.JwtAuthenticationFilter;
+import com.youlai.boot.core.security.manager.AppJwtTokenManger;
 import com.youlai.boot.core.security.service.AppUserDetailsService;
 import com.youlai.boot.core.security.service.SysUserDetailsService;
 import com.youlai.boot.core.security.manager.JwtTokenManager;
@@ -52,6 +53,7 @@ public class SecurityConfig {
     private final PasswordEncoder passwordEncoder;
 
     private final JwtTokenManager jwtTokenService;
+    private final AppJwtTokenManger appJwtTokenManger;
     private final WxMaService wxMaService;
     private final UserService userService;
     private final SysUserDetailsService userDetailsService;
@@ -95,11 +97,11 @@ public class SecurityConfig {
                 // 禁用 X-Frame-Options 响应头，允许页面被嵌套到 iframe 中
                 .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
                 // 限流过滤器
-                .addFilterBefore(new RateLimiterFilter(redisTemplate, configService), UsernamePasswordAuthenticationFilter.class)
+//                .addFilterBefore(new RateLimiterFilter(redisTemplate, configService), UsernamePasswordAuthenticationFilter.class)
                 // 验证码校验过滤器
                 .addFilterBefore(new CaptchaValidationFilter(redisTemplate, codeGenerator), UsernamePasswordAuthenticationFilter.class)
                 // JWT 验证和解析过滤器
-                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenService), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenService, appJwtTokenManger), UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 

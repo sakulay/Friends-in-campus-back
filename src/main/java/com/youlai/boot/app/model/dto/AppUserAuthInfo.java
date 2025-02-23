@@ -2,6 +2,8 @@ package com.youlai.boot.app.model.dto;
 
 import lombok.Data;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -32,5 +34,15 @@ public class AppUserAuthInfo {
      * 认证身份图片
      */
     private String authInfo;
+    /**
+     * 数据权限范围，用于控制用户可以访问的数据级别
+     *
+     * @see com.youlai.boot.common.enums.DataScopeEnum
+     */
+    private Integer dataScope = 0;
+    /**
+     * 学生用户角色，默认为"STUDENT"
+     */
+    private Set<String> roles = new HashSet<>(Collections.singleton("STUDENT"));;
 
 }

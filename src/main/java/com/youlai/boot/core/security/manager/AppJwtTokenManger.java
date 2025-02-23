@@ -1,5 +1,6 @@
 package com.youlai.boot.core.security.manager;
 
+import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.json.JSONObject;
@@ -18,11 +19,15 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @ConditionalOnProperty(value = "security.session.type", havingValue = "jwt")
 @Service("appJwtTokenManger")
@@ -56,7 +61,7 @@ public class AppJwtTokenManger implements TokenManager{
         return AuthenticationToken.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
-                .tokenType("Bearer")
+                .tokenType("AppBearer")
                 .expiresIn(accessTokenTimeToLive)
                 .build();
     }
@@ -71,8 +76,14 @@ public class AppJwtTokenManger implements TokenManager{
         JSONObject payloads = jwt.getPayloads();
         AppUserDetails userDetails = new AppUserDetails();
         userDetails.setStudentId(payloads.getStr(JwtClaimConstants.STUDENT_ID)); //用户ID
+        userDetails.setDataScope(payloads.getInt(JwtClaimConstants.DATA_SCOPE)); // 数据权限范围
+        // 角色集合
+        Set<SimpleGrantedAuthority> authorities = payloads.getJSONArray(JwtClaimConstants.AUTHORITIES)
+                .stream()
+                .map(authority -> new SimpleGrantedAuthority(Convert.toStr(authority)))
+                .collect(Collectors.toSet());
 
-        return new UsernamePasswordAuthenticationToken(userDetails, "");
+        return new UsernamePasswordAuthenticationToken(userDetails, "", authorities);
     }
 
     /**
@@ -136,7 +147,13 @@ public class AppJwtTokenManger implements TokenManager{
         AppUserDetails appUserDetails = (AppUserDetails) authentication.getPrincipal();
         Map<String, Object> payload = new HashMap<>();
         payload.put(JwtClaimConstants.STUDENT_ID, appUserDetails.getStudentId()); // 学生ID
+        payload.put(JwtClaimConstants.DATA_SCOPE, appUserDetails.getDataScope()); // 数据权限范围
 
+        // claims 中添加角色信息
+        Set<String> roles = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toSet());
+        payload.put(JwtClaimConstants.AUTHORITIES, roles);
         Date now = new Date();
         payload.put(JWTPayload.ISSUED_AT, now);
 

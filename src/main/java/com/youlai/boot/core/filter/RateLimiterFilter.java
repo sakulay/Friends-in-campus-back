@@ -31,7 +31,7 @@ public class RateLimiterFilter extends OncePerRequestFilter {
     private final RedisTemplate<String, Object> redisTemplate;
     private final ConfigService configService;
 
-    private static final long DEFAULT_IP_LIMIT = 10L; // 默认 IP 限流阈值
+    private static final long DEFAULT_IP_LIMIT = 100L; // 默认 IP 限流阈值
 
     public RateLimiterFilter(RedisTemplate<String, Object> redisTemplate, ConfigService configService) {
         this.redisTemplate = redisTemplate;

@@ -46,7 +46,10 @@ public class AppUserDetails implements UserDetails {
      * 认证身份图片
      */
     private String authInfo;
-
+    /**
+     * 数据权限范围
+     */
+    private Integer dataScope;
     /**
      * 用户角色权限集合
      */
@@ -61,14 +64,14 @@ public class AppUserDetails implements UserDetails {
         this.studentId = user.getStudentId().toString();
         this.password = user.getPassword();
         this.authStatus = user.getAuthStatus();
-//        this.authInfo = user.getAuthInfo();
-        // 初始化角色权限集合
-//        this.authorities = CollectionUtil.isNotEmpty(user.getRoles())
-//                ? user.getRoles().stream()
-//                // 角色名加上前缀 "ROLE_"，用于区分角色 (ROLE_ADMIN) 和权限 (user:add)
-//                .map(role -> new SimpleGrantedAuthority(SecurityConstants.ROLE_PREFIX + role))
-//                .collect(Collectors.toSet())
-//                : Collections.emptySet();
+        this.dataScope = user.getDataScope();
+        // 初始化角色集合
+        this.authorities = CollectionUtil.isNotEmpty(user.getRoles())
+                ? user.getRoles().stream()
+                // 角色名加上前缀 "ROLE_"，用于区分角色 (ROLE_ADMIN) 和权限 (user:add)
+                .map(role -> new SimpleGrantedAuthority(SecurityConstants.ROLE_PREFIX + role))
+                .collect(Collectors.toSet())
+                : Collections.emptySet();
     }
 
 

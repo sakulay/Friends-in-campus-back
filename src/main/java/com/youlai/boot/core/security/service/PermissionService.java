@@ -43,6 +43,7 @@ public class PermissionService {
 
         // 获取当前登录用户的角色编码集合
         Set<String> roleCodes = SecurityUtils.getRoles();
+        log.info("用户角色" + roleCodes);
         if (CollectionUtil.isEmpty(roleCodes)) {
             return false;
         }

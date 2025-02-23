@@ -40,7 +40,7 @@ public class AppUserDetailsService implements UserDetailsService {
                 log.info("用户信息不存在，学号: {}", studentId);
                 throw new UsernameNotFoundException(studentId);
             }
-            log.error("用户信息不存在，学号: {}", studentId);
+
             if (userAuthInfo.getAuthStatus() == 0) {
                 log.error("用户未认证，学号: {}", studentId);
                 throw new UsernameNotFoundException(studentId);
