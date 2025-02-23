@@ -113,11 +113,11 @@ public class AppUserServiceImpl extends ServiceImpl<AppUserMapper, AppUser> impl
     @Override
     public AppUserAuthInfo getUserAuthInfo(String studentId) {
         AppUserAuthInfo userAuthInfo = this.baseMapper.getUserAuthInfo(studentId);
-        if(userAuthInfo != null) {
-            String password = userAuthInfo.getPassword();
-            password = new BCryptPasswordEncoder().encode(password);
-            userAuthInfo.setPassword(password);
-        }
+//        if(userAuthInfo != null) {
+//            String password = userAuthInfo.getPassword();
+//            password = new BCryptPasswordEncoder().encode(password);
+//            userAuthInfo.setPassword(password);
+//        }
         return userAuthInfo;
     }
     @Override

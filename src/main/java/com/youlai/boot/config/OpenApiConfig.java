@@ -23,9 +23,7 @@ import java.util.stream.Stream;
 /**
  * OpenAPI 接口文档配置
  *
- * @author Ray.Hao
  * @see <a href="https://doc.xiaominfo.com/docs/quick-start">knife4j 快速开始</a>
- * @since 2023/2/17
  */
 @Configuration
 @RequiredArgsConstructor
@@ -47,15 +45,15 @@ public class OpenApiConfig {
         return new OpenAPI()
                 .info(new Info()
                         .title("管理系统 API 文档")
-                        .description("本文档涵盖管理系统的所有API接口，包括登录认证、用户管理、角色管理、部门管理等功能模块，提供详细的接口说明和使用指南。")
+                        .description("本文档涵盖管理系统的所有API接口，包括登录认证、用户管理、角色管理等功能模块，提供详细的接口说明和使用指南。")
                         .version(appVersion)
                         .license(new License()
                                 .name("Apache License 2.0")
                                 .url("http://www.apache.org/licenses/LICENSE-2.0")
                         )
                         .contact(new Contact()
-                                .name("youlai")
-                                .email("youlaitech@163.com")
+                                .name("yuyu")
+                                .email("1055513941@qq.com")
                                 .url("https://www.youlai.tech")
                         )
                 )
