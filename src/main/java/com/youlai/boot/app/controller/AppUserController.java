@@ -94,4 +94,12 @@ public class AppUserController  {
         AppUserAuthInfo appUserAuthInfo = appUserService.getUserAuthInfo(username);
         return Result.success(appUserAuthInfo);
     }
+    @Operation(summary = "审核学生")
+    @PutMapping(value = "/verify/{studentId}")
+    public Result<Void> verify(
+            @Parameter(description = "学生用户ID") @PathVariable Long studentId
+    ) {
+        boolean result = appUserService.verify(studentId);
+        return Result.judge(result);
+    }
 }

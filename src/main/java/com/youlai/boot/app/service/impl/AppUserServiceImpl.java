@@ -2,6 +2,9 @@ package com.youlai.boot.app.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.youlai.boot.app.model.dto.AppUserAuthInfo;
+import com.youlai.boot.app.model.form.AppUserProfileForm;
+import com.youlai.boot.app.service.AppUserProfileService;
+import com.youlai.boot.common.constant.MyConstans;
 import com.youlai.boot.common.exception.BusinessException;
 import com.youlai.boot.common.result.ResultCode;
 import lombok.RequiredArgsConstructor;
@@ -37,7 +40,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class AppUserServiceImpl extends ServiceImpl<AppUserMapper, AppUser> implements AppUserService {
 
     private final AppUserConverter appUserConverter;
-
+    private final AppUserProfileService appUserProfileService;
     /**
     * 获取用户分页列表
     *
@@ -139,6 +142,11 @@ public class AppUserServiceImpl extends ServiceImpl<AppUserMapper, AppUser> impl
 //        }
         return userAuthInfo;
     }
+
+    /**
+     * 用户注册
+     * @param appUserForm 需要的注册信息：学号、密码、认证信息（证明学生身份的图片）
+     */
     @Override
     public void register(AppUserForm appUserForm) {
         appUserForm
@@ -155,4 +163,28 @@ public class AppUserServiceImpl extends ServiceImpl<AppUserMapper, AppUser> impl
         this.baseMapper.insert(appUserConverter.toEntity(appUserForm));
     }
 
+    /**
+     * 审核学生
+     *
+     * @param studengId 审核通过的学生id
+     */
+    @Override
+    @Transactional
+    public boolean verify(Long studengId) {
+        //1.检查用户id是否存在
+        AppUserAuthInfo userAuthInfo = this.getUserAuthInfo(String.valueOf(studengId));
+        if(userAuthInfo != null) {
+            //2.若存在，则将auth_status字段的值设为1（0为未认证）
+            UpdateWrapper<AppUser> wrapper = new UpdateWrapper<>();
+            wrapper
+                    .eq("student_id", studengId)
+                    .set("auth_status", 1);
+            this.update(null, wrapper);
+            //3.认证通过后，初始化学生个人信息：studentId、nickName、bio
+            AppUserProfileForm appUserProfileForm = new AppUserProfileForm();
+            appUserProfileForm.setStudentId(studengId);
+            appUserProfileForm.setBio(MyConstans.APP_USER_PROFILE_BIO);
+            return appUserProfileService.saveAppUserProfile(appUserProfileForm);
+        } else throw new BusinessException(ResultCode.USER_NON_EXISI);
+    }
 }

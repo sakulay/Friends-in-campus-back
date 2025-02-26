@@ -69,4 +69,10 @@ public interface AppUserService extends IService<AppUser> {
      * @param appUserForm 需要的注册信息：学号、密码、认证信息（证明学生身份的图片）
      */
     void register(AppUserForm appUserForm);
+
+    /**
+     * 审核学生
+     * @param studengId 审核通过的学生id
+     */
+    boolean verify(Long studengId);
 }
