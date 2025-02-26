@@ -1,5 +1,6 @@
 package com.youlai.boot.app.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.youlai.boot.app.model.dto.AppUserAuthInfo;
 import com.youlai.boot.common.exception.BusinessException;
 import com.youlai.boot.common.result.ResultCode;
@@ -23,6 +24,7 @@ import java.util.List;
 
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.StrUtil;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 用户服务实现类
@@ -82,13 +84,30 @@ public class AppUserServiceImpl extends ServiceImpl<AppUserMapper, AppUser> impl
      * @param formData 用户表单对象
      * @return
      */
+    @Transactional
     @Override
     public boolean updateAppUser(Long id,AppUserForm formData) {
-        formData.setPassword(new BCryptPasswordEncoder().encode(formData.getPassword()));
+        if(formData.getStudentId() == null) formData.setStudentId(id);
+        //如果不是BCrypt加密，则加密
+        if(formData.getPassword() != null && !isBCrypt(formData.getPassword())) {
+            formData.setPassword(new BCryptPasswordEncoder().encode(formData.getPassword()));
+        }
+        if(formData.getAuthInfo() == null){
+            UpdateWrapper<AppUser> updateWrapper = new UpdateWrapper<>();
+            updateWrapper
+                    .eq("student_id", id)
+                    .set("auth_info", null)
+                    .set("delete_url", null);
+            this.update(null, updateWrapper);
+        }
         AppUser entity = appUserConverter.toEntity(formData);
         return this.updateById(entity);
     }
-    
+    // 判断字符串是否符合BCrypt的格式
+    public static boolean isBCrypt(String password) {
+        // 检查密码长度和格式
+        return password != null && password.matches("^\\$2[ayb]\\$\\d{2}\\$[A-Za-z0-9./]{53}$");
+    }
     /**
      * 删除用户
      *

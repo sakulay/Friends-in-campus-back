@@ -30,12 +30,10 @@ public class AppUserVO implements Serializable {
     private Integer authStatus;
     @Schema(description = "认证信息（如认证图片的URL）")
     private String authInfo;
+    @Schema(description = "图片删除api")
+    private String deleteUrl;
     @Schema(description = "创建时间")
     private LocalDateTime createTime;
-    @Schema(description = "创建人ID")
-    private Long createBy;
     @Schema(description = "更新时间")
     private LocalDateTime updateTime;
-    @Schema(description = "修改人ID")
-    private Long updateBy;
 }

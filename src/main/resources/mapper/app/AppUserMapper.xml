@@ -9,6 +9,7 @@
         password,
         auth_status,
         auth_info,
+        delete_url,
         create_time,
         create_by,
         update_time,

@@ -40,6 +40,9 @@ public class AppUserController  {
     @PreAuthorize("@ss.hasPerm('app:appUser:query')")
     public PageResult<AppUserVO> getAppUserPage(AppUserQuery queryParams ) {
         IPage<AppUserVO> result = appUserService.getAppUserPage(queryParams);
+        for(AppUserVO o: result.getRecords()) {
+            log.info("UserPage: " + o.toString());
+        }
         return PageResult.success(result);
     }
 

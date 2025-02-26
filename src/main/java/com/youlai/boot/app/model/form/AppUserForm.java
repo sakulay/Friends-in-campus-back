@@ -23,11 +23,11 @@ public class AppUserForm implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Schema(description = "学号，唯一标识")
-    @NotNull(message = "学号，唯一标识不能为空")
+//    @NotNull(message = "学号，唯一标识不能为空")
     private Long studentId;
 
     @Schema(description = "用户密码")
-    @NotBlank(message = "用户密码不能为空")
+//    @NotBlank(message = "用户密码不能为空")
     @Size(max=255, message="用户密码长度不能超过255个字符")
     private String password;
 
@@ -35,21 +35,10 @@ public class AppUserForm implements Serializable {
     private Integer authStatus;
 
     @Schema(description = "认证信息（如认证图片的URL）")
-    @NotBlank(message = "认证信息（如认证图片的URL）不能为空")
+//    @NotBlank(message = "认证信息（如认证图片的URL）不能为空")
     @Size(max=255, message="认证信息（如认证图片的URL）长度不能超过255个字符")
     private String authInfo;
 
-    @Schema(description = "创建时间")
-    private LocalDateTime createTime;
-
-    @Schema(description = "创建人ID")
-    private Long createBy;
-
-    @Schema(description = "更新时间")
-    private LocalDateTime updateTime;
-
-    @Schema(description = "修改人ID")
-    private Long updateBy;
-
-
+    @Schema(description = "图片删除api")
+    private String deleteUrl;
 }

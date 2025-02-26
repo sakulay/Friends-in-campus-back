@@ -89,10 +89,10 @@ public class AliyunFileService implements FileService {
 
     @Override
     public boolean deleteFile(String filePath) {
-        Assert.notBlank(filePath, "删除文件路径不能为空");
-        String fileHost = "https://" + bucketName + "." + endpoint; // 文件主机域名
-        String fileName = filePath.substring(fileHost.length() + 1); // +1 是/占一个字符，截断左闭右开
-        aliyunOssClient.deleteObject(bucketName, fileName);
-        return true;
+            Assert.notBlank(filePath, "删除文件路径不能为空");
+            String fileHost = "https://" + bucketName + "." + endpoint; // 文件主机域名
+            String fileName = filePath.substring(fileHost.length() + 1); // +1 是/占一个字符，截断左闭右开
+            aliyunOssClient.deleteObject(bucketName, fileName);
+            return true;
     }
 }
