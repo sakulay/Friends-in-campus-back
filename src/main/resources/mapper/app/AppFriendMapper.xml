@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youlai.boot.app.mapper.AppFriendMapper">
+
+    <!-- 获取用户好友关系分页列表 -->
+    <select id="getAppFriendPage" resultType="com.youlai.boot.app.model.vo.AppFriendVO">
+        SELECT
+                id,
+                user_id,
+                friend_id,
+                status,
+                create_time,
+                update_time,
+                is_deleted
+        FROM
+            app_friend
+        <where>
+        </where>
+    </select>
+
+</mapper>

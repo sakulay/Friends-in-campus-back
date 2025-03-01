@@ -98,7 +98,7 @@ public enum ResultCode implements IResultCode, Serializable {
     USER_REQUEST_PARAMETER_ERROR("A0400", "用户请求参数错误"),
     CONTAINS_ILLEGAL_MALICIOUS_REDIRECT_LINK("A0401", "包含非法恶意跳转链接"),
     INVALID_USER_INPUT("A0402", "无效的用户输入"),
-
+    INVALID_FIREND_REQUEST("A0403", "无效好友申请"),
     REQUEST_REQUIRED_PARAMETER_IS_EMPTY("A0410", "请求必填参数为空"),
 
     REQUEST_PARAMETER_VALUE_EXCEEDS_ALLOWED_RANGE("A0420", "请求参数值超出允许的范围"),
