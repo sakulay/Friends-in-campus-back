@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youlai.boot.app.mapper.AppPostCommentMapper">
+
+    <!-- 获取图文评论分页列表 -->
+    <select id="getAppPostCommentPage" resultType="com.youlai.boot.app.model.vo.AppPostCommentVO">
+        SELECT
+                id,
+                user_id,
+                post_id,
+                content,
+                parent_id,
+                create_time,
+                is_deleted,
+                is_reply,
+                status
+        FROM
+            app_post_comment
+        <where>
+        </where>
+    </select>
+
+</mapper>
