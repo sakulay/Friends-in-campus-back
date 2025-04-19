@@ -1,10 +1,11 @@
-package com.youlai.boot.app.mapper;
+package com.youlai.boot.app.model.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.youlai.boot.app.model.entity.AppFriendRequest;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.youlai.boot.app.model.query.AppFriendRequestQuery;
 import com.youlai.boot.app.model.vo.AppFriendRequestVO;
+import com.youlai.boot.app.model.vo.FriendSimpleVO;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
@@ -24,5 +25,9 @@ public interface AppFriendRequestMapper extends BaseMapper<AppFriendRequest> {
      * @return
      */
     Page<AppFriendRequestVO> getAppFriendRequestPage(Page<AppFriendRequestVO> page, AppFriendRequestQuery queryParams);
+    Page<FriendSimpleVO> getAppFriendRequestWithInfoPage(Page<Object> objectPage, AppFriendRequestQuery queryParams, Long studentId);
+
+    AppFriendRequestVO getFriendRequestBySenderIdAndReceiverId(Long senderId, Long receiverId);
+
 
 }

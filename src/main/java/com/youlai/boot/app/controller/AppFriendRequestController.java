@@ -1,5 +1,6 @@
 package com.youlai.boot.app.controller;
 
+import com.youlai.boot.app.model.vo.FriendSimpleVO;
 import com.youlai.boot.app.service.AppFriendRequestService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -40,6 +41,13 @@ public class AppFriendRequestController  {
         return PageResult.success(result);
     }
 
+    @Operation(summary = "好友申请分页列表2")
+    @GetMapping("/infoPage")
+    @PreAuthorize("@ss.hasPerm('app:appFriendRequest:query')")
+    public PageResult<FriendSimpleVO> getAppFriendRequestWithInfoPage(AppFriendRequestQuery queryParams ) {
+        IPage<FriendSimpleVO> result = appFriendRequestService.getAppFriendRequestWithInfoPage(queryParams);
+        return PageResult.success(result);
+    }
     @Operation(summary = "新增好友申请")
     @PostMapping
     @PreAuthorize("@ss.hasPerm('app:appFriendRequest:add')")
@@ -85,6 +93,15 @@ public class AppFriendRequestController  {
             @Parameter(description = "学生用户ID") @PathVariable Long id
     ) {
         boolean result = appFriendRequestService.passRequest(id);
+        return Result.judge(result);
+    }
+
+    @Operation(summary = "拒绝好友请求")
+    @PutMapping(value = "/rejectRequest/{id}")
+    public Result<Void> rejectRequest(
+            @Parameter(description = "学生用户ID") @PathVariable Long id
+    ) {
+        boolean result = appFriendRequestService.rejectRequest(id);
         return Result.judge(result);
     }
 }

@@ -1,5 +1,6 @@
 package com.youlai.boot.app.controller;
 
+import com.youlai.boot.app.model.vo.FriendSimpleVO;
 import com.youlai.boot.app.service.AppFriendService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -77,5 +78,38 @@ public class AppFriendController  {
     ) {
         boolean result = appFriendService.deleteAppFriends(ids);
         return Result.judge(result);
+    }
+
+    @Operation(summary = "根据学生ID查询好友列表，支持模糊查询")
+    @GetMapping("/student/{studentId}")
+    @PreAuthorize("@ss.hasPerm('app:appFriend:query')")
+    public PageResult<FriendSimpleVO> getAppFriendListByStudentId(
+            @Parameter(description = "学生ID") @PathVariable Long studentId,
+            @Parameter(description = "模糊查询关键字") @RequestParam(required = false) String keyword
+    ) {
+        IPage<FriendSimpleVO> result = appFriendService.getAppFriendListByStudentId(studentId, keyword);
+        return PageResult.success(result);
+    }
+
+    @Operation(summary = "根据学生ID和好友ID查询他们之间的关系")
+    @GetMapping("/relationship/{studentId}/{friendId}")
+    @PreAuthorize("@ss.hasPerm('app:appFriend:query')")
+    public Result<Integer> getAppFriendRelationship(
+        @Parameter(description = "学生ID") @PathVariable Long studentId,
+        @Parameter(description = "好友ID") @PathVariable Long friendId
+    ) {
+        Integer status = appFriendService.getAppFriendRelationship(studentId, friendId);
+        return Result.success(status);
+    }
+
+    @Operation(summary = "查询用户")
+    @GetMapping("/friendInfo/{studentId}/{friendId}")
+    @PreAuthorize("@ss.hasPerm('app:appFriend:query')")
+    public Result<FriendSimpleVO> getAppFriendInfo(
+            @Parameter(description = "学生ID") @PathVariable Long studentId,
+            @Parameter(description = "好友ID") @PathVariable Long friendId
+    ) {
+        FriendSimpleVO friendSimpleVO = appFriendService.getAppFriendInfo(studentId, friendId);
+        return Result.success(friendSimpleVO);
     }
 }

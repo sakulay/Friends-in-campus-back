@@ -27,6 +27,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @ConditionalOnProperty(value = "security.session.type", havingValue = "jwt")
@@ -136,11 +137,37 @@ public class AppJwtTokenManger implements TokenManager{
                 .build();
     }
 
+    @Override
+    public void blacklistToken(String token) {
+        if (token.startsWith(SecurityConstants.APP_JWT_TOKEN_PREFIX)) {
+            token = token.substring(SecurityConstants.APP_JWT_TOKEN_PREFIX.length());
+        }
+        JWT jwt = JWTUtil.parseToken(token);
+        JSONObject payloads = jwt.getPayloads();
+        String jti = payloads.getStr(JWTPayload.JWT_ID);
+        Integer expirationAt = payloads.getInt(JWTPayload.EXPIRES_AT);
+
+        if (expirationAt != null) {
+            int currentTimeSeconds = Convert.toInt(System.currentTimeMillis() / 1000);
+            if (expirationAt < currentTimeSeconds) {
+                // Token已过期，直接返回
+                return;
+            }
+            // 计算Token剩余时间，将其加入黑名单
+            int expirationIn = expirationAt - currentTimeSeconds;
+            redisTemplate.opsForValue().set(SecurityConstants.BLACKLIST_TOKEN_PREFIX + jti, null, expirationIn, TimeUnit.SECONDS);
+        } else {
+            // 永不过期的Token永久加入黑名单
+            redisTemplate.opsForValue().set(SecurityConstants.BLACKLIST_TOKEN_PREFIX + jti, null);
+        }
+        ;
+    }
+
     /**
      * 生成 JWT Token
      *
      * @param authentication 认证信息
-     * @param ttl           过期时间
+     * @param ttl           过期时间blacklistToken
      * @return
      */
     private String generateToken(Authentication authentication, int ttl) {
@@ -167,4 +194,6 @@ public class AppJwtTokenManger implements TokenManager{
 
         return JWTUtil.createToken(payload, secretKey);
     }
+
+
 }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.youlai.boot.app.mapper.AppPostCommentMapper">
+<mapper namespace="com.youlai.boot.app.model.mapper.AppPostCommentMapper">
 
     <!-- 获取图文评论分页列表 -->
     <select id="getAppPostCommentPage" resultType="com.youlai.boot.app.model.vo.AppPostCommentVO">
@@ -18,6 +18,40 @@
             app_post_comment
         <where>
         </where>
+    </select>
+
+    <!-- 根据ID获取评论分页列表 -->
+    <select id="getCommentPageById" resultType="com.youlai.boot.app.model.vo.CommentVO">
+        SELECT
+            c.id,
+            c.user_id AS userId,
+            c.content AS text,
+            c.parent_id AS replyId,
+            c.create_time AS commentTime,
+            c.like_count AS likeCount
+        FROM
+            app_post_comment c
+        WHERE
+            c.is_deleted = 0 AND c.post_id = #{postId}
+        ORDER BY
+            c.create_time DESC
+    </select>
+
+    <!-- 根据父评论ID获取回复评论 -->
+    <select id="getReplyCommentsByParentId" resultType="com.youlai.boot.app.model.vo.CommentVO">
+        SELECT
+            c.id,
+            c.user_id,
+            c.content AS text,
+            c.parent_id AS replyId,
+            c.create_time AS commentTime,
+            c.like_count AS likeCount
+        FROM
+            app_post_comment c
+        WHERE
+            c.is_deleted = 0 AND c.parent_id = #{parentId}
+        ORDER BY
+            c.create_time DESC
     </select>
 
 </mapper>

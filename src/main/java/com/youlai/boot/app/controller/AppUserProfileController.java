@@ -58,6 +58,16 @@ public class AppUserProfileController  {
         return Result.success(formData);
     }
 
+    @Operation(summary = "获取用户个人简单信息")
+    @GetMapping("/{studentId}/info")
+    @PreAuthorize("@ss.hasPerm('app:appUserProfile:edit')")
+    public Result<AppUserProfileForm> getUserSimpleInfo(
+            @Parameter(description = "用户个人信息ID") @PathVariable Long studentId
+    ) {
+        AppUserProfileForm formData = appUserProfileService.getAppUserSimpleInfo(studentId);
+        return Result.success(formData);
+    }
+
     @Operation(summary = "修改用户个人信息")
     @PutMapping(value = "/{id}")
     @PreAuthorize("@ss.hasPerm('app:appUserProfile:edit')")
@@ -66,6 +76,17 @@ public class AppUserProfileController  {
             @RequestBody @Validated AppUserProfileForm formData
     ) {
         boolean result = appUserProfileService.updateAppUserProfile(id, formData);
+        return Result.judge(result);
+    }
+
+    @Operation(summary = "根据studentId修改用户个人信息")
+    @PutMapping(value = "/student/{studentId}")
+    @PreAuthorize("@ss.hasPerm('app:appUserProfile:edit')")
+    public Result<Void> updateAppUserProfileByStudentId(
+        @Parameter(description = "用户个人信息studentId") @PathVariable Long studentId,
+        @RequestBody @Validated AppUserProfileForm formData
+    ) {
+        boolean result = appUserProfileService.updateAppUserProfileByStudentId(studentId, formData);
         return Result.judge(result);
     }
 

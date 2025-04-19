@@ -28,6 +28,10 @@ public class AppPostVO implements Serializable {
     private Long id;
     @Schema(description = "发布图文的用户ID，关联到 app_user 表")
     private Long userId;
+    @Schema(description = "发布图文的用户昵称")
+    private String nickname;
+    @Schema(description = "发布图文的用户头像")
+    private String avatar;
     @Schema(description = "图文标题")
     private String title;
     @Schema(description = "图文内容，支持富文本")
@@ -44,4 +48,6 @@ public class AppPostVO implements Serializable {
     private Integer status;
     @Schema(description = "图片列表")
     private List<AppPostImageVO> imageList;
+    @Schema(description = "用户信息")
+    private FriendSimpleVO userInfo;
 }

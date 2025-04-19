@@ -99,6 +99,9 @@ public enum ResultCode implements IResultCode, Serializable {
     CONTAINS_ILLEGAL_MALICIOUS_REDIRECT_LINK("A0401", "包含非法恶意跳转链接"),
     INVALID_USER_INPUT("A0402", "无效的用户输入"),
     INVALID_FIREND_REQUEST("A0403", "无效好友申请"),
+    FRIEND_REQUEST_ON_PENDING("A0404", "好友申请待处理，请勿重复申请"),
+    ALREADY_IS_FRIEND("A0405", "你们已经是好友"),
+    HAS_ALREADY_BEEN_FRIENDS("A0406", "你们已经成为好友"),
     REQUEST_REQUIRED_PARAMETER_IS_EMPTY("A0410", "请求必填参数为空"),
 
     REQUEST_PARAMETER_VALUE_EXCEEDS_ALLOWED_RANGE("A0420", "请求参数值超出允许的范围"),

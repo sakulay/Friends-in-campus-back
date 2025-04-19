@@ -78,6 +78,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
         registration.interceptors(new ChannelInterceptor() {
+            /**
+             * 拦截 客户端发送到服务器的 WebSocket 消息
+             */
             @Override
             public Message<?> preSend(@NotNull Message<?> message, @NotNull MessageChannel channel) {
                 StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
@@ -89,12 +92,23 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                             String username = JWTUtil.parseToken(bearerToken).getPayloads().getStr(JWTPayload.SUBJECT);
                             if (StrUtil.isNotBlank(username)) {
                                 accessor.setUser(() -> username);
+                                log.info("用户登录：{}", username);
+                                eventPublisher.publishEvent(new UserConnectionEvent(this, username, true));
+                            }
+                        }
+                        else if(StrUtil.isNotBlank(bearerToken) && bearerToken.startsWith("AppBearer ")){
+                            bearerToken = bearerToken.substring(SecurityConstants.APP_JWT_TOKEN_PREFIX.length());
+                            String username = JWTUtil.parseToken(bearerToken).getPayloads().getStr(JWTPayload.SUBJECT);
+                            if (StrUtil.isNotBlank(username)) {
+                                accessor.setUser(() -> username);
+                                log.info("App用户登录：{}", username);
                                 eventPublisher.publishEvent(new UserConnectionEvent(this, username, true));
                             }
                         }
                     } else if (StompCommand.DISCONNECT.equals(accessor.getCommand())) {
                         if (accessor.getUser() != null) {
                             String username = accessor.getUser().getName();
+                            log.info("用户退出：{}", username);
                             eventPublisher.publishEvent(new UserConnectionEvent(this, username, false));
                         }
                     }

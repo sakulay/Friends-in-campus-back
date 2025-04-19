@@ -1,4 +1,4 @@
-package com.youlai.boot.app.mapper;
+package com.youlai.boot.app.model.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.youlai.boot.app.model.entity.AppUserProfile;
@@ -24,5 +24,7 @@ public interface AppUserProfileMapper extends BaseMapper<AppUserProfile> {
      * @return
      */
     Page<AppUserProfileVO> getAppUserProfilePage(Page<AppUserProfileVO> page, AppUserProfileQuery queryParams);
+
+    AppUserProfile getByStudentId(Long id);
 
 }

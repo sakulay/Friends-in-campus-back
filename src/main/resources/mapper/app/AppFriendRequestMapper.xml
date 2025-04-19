@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.youlai.boot.app.mapper.AppFriendRequestMapper">
+<mapper namespace="com.youlai.boot.app.model.mapper.AppFriendRequestMapper">
 
     <!-- 获取好友申请分页列表 -->
     <select id="getAppFriendRequestPage" resultType="com.youlai.boot.app.model.vo.AppFriendRequestVO">
@@ -16,6 +16,39 @@
             app_friend_request
         <where>
         </where>
+    </select>
+    <select id="getFriendRequestBySenderIdAndReceiverId"
+            resultType="com.youlai.boot.app.model.vo.AppFriendRequestVO">
+        SELECT
+                id,
+                sender_id,
+                receiver_id,
+                status,
+                create_time,
+                update_time,
+                is_deleted
+        FROM
+            app_friend_request
+        WHERE
+            sender_id = #{senderId}
+            AND receiver_id = #{receiverId}
+        ORDER BY create_time DESC
+        LIMIT 1
+    </select>
+
+    <select id="getAppFriendRequestWithInfoPage" resultType="com.youlai.boot.app.model.vo.FriendSimpleVO">
+        SELECT
+            r.id requestId,
+            p.student_id,
+            p.nickname,
+            p.avatar,
+            p.gender,
+            p.bio,
+            r.status
+        FROM app_friend_request r
+            JOIN app_user_profile p ON r.sender_id = p.student_id
+        where receiver_id = ${studentId}
+        ORDER BY p.create_time DESC
     </select>
 
 </mapper>

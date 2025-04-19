@@ -1,11 +1,15 @@
-package com.youlai.boot.app.mapper;
+package com.youlai.boot.app.model.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.youlai.boot.app.model.entity.AppChatMessage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.youlai.boot.app.model.query.AppChatMessageQuery;
 import com.youlai.boot.app.model.vo.AppChatMessageVO;
+import com.youlai.boot.app.model.vo.MessageVO;
+import com.youlai.boot.app.model.vo.UnreadVO;
 import org.apache.ibatis.annotations.Mapper;
+
+import java.util.List;
 
 /**
  * 用户聊天记录Mapper接口
@@ -25,4 +29,9 @@ public interface AppChatMessageMapper extends BaseMapper<AppChatMessage> {
      */
     Page<AppChatMessageVO> getAppChatMessagePage(Page<AppChatMessageVO> page, AppChatMessageQuery queryParams);
 
+    List<UnreadVO> getAppChatUnreadById(Long id);
+
+    String getLatestContentBySenderAndReceiver(Long senderId, Long receiverId);
+
+    List<MessageVO> getAppChatMessages(Long id, Long otherId);
 }

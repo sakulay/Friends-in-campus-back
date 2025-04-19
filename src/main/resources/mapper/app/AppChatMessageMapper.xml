@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.youlai.boot.app.mapper.AppChatMessageMapper">
+<mapper namespace="com.youlai.boot.app.model.mapper.AppChatMessageMapper">
 
     <!-- 获取用户聊天记录分页列表 -->
     <select id="getAppChatMessagePage" resultType="com.youlai.boot.app.model.vo.AppChatMessageVO">
@@ -17,6 +17,44 @@
             app_chat_message
         <where>
         </where>
+    </select>
+
+    <select id="getAppChatUnreadById" resultType="com.youlai.boot.app.model.vo.UnreadVO">
+        SELECT
+            sender_id AS sender,
+            p.avatar,
+            p.nickname,
+            message_content AS unreadCount
+        FROM
+            app_chat_message m LEFT JOIN app_user_profile p ON m.sender_id = p.student_id
+        WHERE
+            receiver_id = #{receiverId}
+            AND m.is_deleted = 0
+            AND m.message_type = 4
+    </select>
+
+    <select id="getLatestContentBySenderAndReceiver" resultType="java.lang.String">
+        SELECT
+            message_content
+        FROM
+            app_chat_message
+        WHERE
+            sender_id = #{senderId}
+            AND receiver_id = #{receiverId}
+            AND is_deleted = 0
+            AND message_type = 1
+        ORDER BY
+            create_time DESC
+        LIMIT 1
+    </select>
+    <select id="getAppChatMessages" resultType="com.youlai.boot.app.model.vo.MessageVO">
+        SELECT
+            m.sender_id sender,
+            m.receiver_id receiver,
+            m.message_content content
+        FROM app_chat_message m
+        WHERE (sender_id IN (#{id}, #{otherId}) AND receiver_id IN (#{id}, #{otherId}))
+          AND sender_id != receiver_id AND is_deleted = 0 AND message_type = 1;
     </select>
 
 </mapper>

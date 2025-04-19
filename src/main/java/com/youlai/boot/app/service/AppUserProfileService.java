@@ -31,6 +31,12 @@ public interface AppUserProfileService extends IService<AppUserProfile> {
      AppUserProfileForm getAppUserProfileFormData(Long id);
 
     /**
+     * 获取用户个人简单信息
+     * @param studentId
+     * @return
+     */
+     AppUserProfileForm getAppUserSimpleInfo(Long studentId);
+    /**
      * 新增用户个人信息
      *
      * @param formData 用户个人信息表单对象
@@ -55,4 +61,5 @@ public interface AppUserProfileService extends IService<AppUserProfile> {
      */
     boolean deleteAppUserProfiles(String ids);
 
+    boolean updateAppUserProfileByStudentId(Long studentId, AppUserProfileForm formData);
 }

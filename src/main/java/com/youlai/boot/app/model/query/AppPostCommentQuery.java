@@ -17,5 +17,6 @@ import java.util.List;
 @Getter
 @Setter
 public class AppPostCommentQuery extends BasePageQuery {
-
+    @Schema(description = "图文ID")
+    int postId;
 }

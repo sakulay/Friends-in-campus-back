@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.youlai.boot.app.mapper.AppPostImageMapper;
+import com.youlai.boot.app.model.mapper.AppPostImageMapper;
 import com.youlai.boot.app.service.AppPostImageService;
 import com.youlai.boot.app.model.entity.AppPostImage;
 import com.youlai.boot.app.model.form.AppPostImageForm;
@@ -15,7 +15,6 @@ import com.youlai.boot.app.converter.AppPostImageConverter;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.StrUtil;

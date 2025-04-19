@@ -1,5 +1,7 @@
 package com.youlai.boot.app.controller;
 
+import com.youlai.boot.app.model.vo.MessageVO;
+import com.youlai.boot.app.model.vo.UnreadVO;
 import com.youlai.boot.app.service.AppChatMessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,6 +19,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
+
+import java.util.List;
 
 /**
  * 用户聊天记录前端控制层
@@ -77,5 +81,36 @@ public class AppChatMessageController  {
     ) {
         boolean result = appChatMessageService.deleteAppChatMessages(ids);
         return Result.judge(result);
+    }
+
+    @Operation(summary = "获取用户未读消息列表")
+    @GetMapping("/{id}/unread")
+    @PreAuthorize("@ss.hasPerm('app:appChatMessage:query')")
+    public Result<List<UnreadVO>> getAppChatUnread(
+            @Parameter(description = "用户聊天记录ID") @PathVariable Long id
+    ) {
+        List<UnreadVO> unreads = appChatMessageService.getAppChatUnread(id);
+        return Result.success(unreads);
+    }
+
+    @Operation(summary = "获取聊天记录")
+    @GetMapping("/{id}/{other}/messages")
+    @PreAuthorize("@ss.hasPerm('app:appChatMessage:query')")
+    public Result<List<MessageVO>> getAppChatmessages(
+            @Parameter(description = "用户ID") @PathVariable Long id,
+            @Parameter(description = "对方ID") @PathVariable Long other
+    ) {
+        List<MessageVO> messages = appChatMessageService.getAppChatMessages(id, other);
+        return Result.success(messages);
+    }
+
+    @Operation(summary = "清空未读消息")
+    @GetMapping("/{sender}/{receiver}/readed")
+    @PreAuthorize("@ss.hasPerm('app:appChatMessage:query')")
+    public Result<Void> handelReaded(
+            @Parameter(description = "用户ID") @PathVariable Long sender,
+            @Parameter(description = "对方ID") @PathVariable Long receiver
+    ) {
+        return Result.judge(appChatMessageService.readed(sender, receiver));
     }
 }

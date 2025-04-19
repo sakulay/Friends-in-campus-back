@@ -31,6 +31,7 @@ public class MyAuthenticationEntryPoint implements AuthenticationEntryPoint {
             if (authException instanceof BadCredentialsException) {
                 // 用户名或密码错误
                 ResponseUtils.writeErrMsg(response, ResultCode.USER_PASSWORD_ERROR, authException.getMessage());
+//                ResponseUtils.writeErrMsg(response, ResultCode.USER_PASSWORD_ERROR, authException.getMessage());
             } else {
                 // 登录异常
                 ResponseUtils.writeErrMsg(response, ResultCode.USER_LOGIN_EXCEPTION, authException.getMessage());

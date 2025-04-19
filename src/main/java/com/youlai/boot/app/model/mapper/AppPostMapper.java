@@ -1,4 +1,4 @@
-package com.youlai.boot.app.mapper;
+package com.youlai.boot.app.model.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.youlai.boot.app.model.entity.AppPost;

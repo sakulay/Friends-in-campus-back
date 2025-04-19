@@ -1,5 +1,7 @@
 package com.youlai.boot.app.controller;
 
+import com.youlai.boot.app.model.vo.AddCommentVO;
+import com.youlai.boot.app.model.vo.CommentVO;
 import com.youlai.boot.app.service.AppPostCommentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -40,12 +42,20 @@ public class AppPostCommentController  {
         return PageResult.success(result);
     }
 
+    @Operation(summary = "根据图文Id获取对应的评论列表")
+    @GetMapping("/pageById")
+    @PreAuthorize("@ss.hasPerm('app:appPostComment:query')")
+    public PageResult<CommentVO> getCommentPageById(AppPostCommentQuery queryParams ) {
+        IPage<CommentVO> result = appPostCommentService.getCommentPageById(queryParams);
+        return PageResult.success(result);
+    }
+
     @Operation(summary = "新增图文评论")
     @PostMapping
     @PreAuthorize("@ss.hasPerm('app:appPostComment:add')")
-    public Result<Void> saveAppPostComment(@RequestBody @Valid AppPostCommentForm formData ) {
-        boolean result = appPostCommentService.saveAppPostComment(formData);
-        return Result.judge(result);
+    public Result<AddCommentVO> saveAppPostComment(@RequestBody @Valid AppPostCommentForm formData ) {
+        AddCommentVO result = appPostCommentService.saveAppPostComment(formData);
+        return Result.success(result);
     }
 
     @Operation(summary = "获取图文评论表单数据")
@@ -78,4 +88,6 @@ public class AppPostCommentController  {
         boolean result = appPostCommentService.deleteAppPostComments(ids);
         return Result.judge(result);
     }
+
+
 }

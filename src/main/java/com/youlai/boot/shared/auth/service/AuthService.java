@@ -26,6 +26,8 @@ public interface AuthService {
      */
     void logout();
 
+    void appLogout();
+
     /**
      * 获取验证码
      *

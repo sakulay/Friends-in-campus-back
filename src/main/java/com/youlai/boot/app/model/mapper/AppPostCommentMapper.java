@@ -1,11 +1,14 @@
-package com.youlai.boot.app.mapper;
+package com.youlai.boot.app.model.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.youlai.boot.app.model.entity.AppPostComment;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.youlai.boot.app.model.query.AppPostCommentQuery;
 import com.youlai.boot.app.model.vo.AppPostCommentVO;
+import com.youlai.boot.app.model.vo.CommentVO;
 import org.apache.ibatis.annotations.Mapper;
+
+import java.util.List;
 
 /**
  * 图文评论Mapper接口
@@ -25,4 +28,5 @@ public interface AppPostCommentMapper extends BaseMapper<AppPostComment> {
      */
     Page<AppPostCommentVO> getAppPostCommentPage(Page<AppPostCommentVO> page, AppPostCommentQuery queryParams);
 
+    List<CommentVO> getCommentPageById(int postId);
 }

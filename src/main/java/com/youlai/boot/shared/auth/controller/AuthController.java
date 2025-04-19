@@ -10,6 +10,7 @@ import com.youlai.boot.core.security.model.AuthenticationToken;
 import com.youlai.boot.common.annotation.Log;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -80,6 +81,14 @@ public class AuthController {
         return Result.success();
     }
 
+    @Operation(summary = "app注销登录")
+    @SecurityRequirement(name = "Authorization")
+    @DeleteMapping("/app/logout")
+    @Log(value = "注销", module = LogModuleEnum.LOGIN)
+    public Result<?> appLogout() {
+        authService.appLogout();
+        return Result.success();
+    }
     @Operation(summary = "刷新访问令牌")
     @PostMapping("/refresh-token")
     public Result<?> refreshToken(

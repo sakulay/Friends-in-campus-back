@@ -3,9 +3,11 @@ package com.youlai.boot.app.service;
 import com.youlai.boot.app.model.entity.AppPostComment;
 import com.youlai.boot.app.model.form.AppPostCommentForm;
 import com.youlai.boot.app.model.query.AppPostCommentQuery;
+import com.youlai.boot.app.model.vo.AddCommentVO;
 import com.youlai.boot.app.model.vo.AppPostCommentVO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.youlai.boot.app.model.vo.CommentVO;
 
 /**
  * 图文评论服务类
@@ -36,7 +38,7 @@ public interface AppPostCommentService extends IService<AppPostComment> {
      * @param formData 图文评论表单对象
      * @return
      */
-    boolean saveAppPostComment(AppPostCommentForm formData);
+    AddCommentVO saveAppPostComment(AppPostCommentForm formData);
 
     /**
      * 修改图文评论
@@ -55,4 +57,10 @@ public interface AppPostCommentService extends IService<AppPostComment> {
      */
     boolean deleteAppPostComments(String ids);
 
+    /**
+     * 根据图文Id获取对应的评论列表
+     * @param queryParams
+     * @return
+     */
+    IPage<CommentVO> getCommentPageById(AppPostCommentQuery queryParams);
 }

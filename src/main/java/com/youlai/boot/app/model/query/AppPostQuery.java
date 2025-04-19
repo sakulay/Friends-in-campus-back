@@ -17,5 +17,12 @@ import java.util.List;
 @Getter
 @Setter
 public class AppPostQuery extends BasePageQuery {
+    @Schema(description = "标题")
+    Long userId;
 
+    @Schema(description = "标题")
+    private String title;
+
+    @Schema(description = "状态")
+    private Integer status;
 }

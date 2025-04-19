@@ -32,7 +32,7 @@ public class AppChatMessage extends BaseEntity {
      */
     private String messageContent;
     /**
-     * 消息类型，1-文本消息，2-图片，3-语音等
+     * 消息类型，1-文本消息，2-图片，3-语音, 4-未读消息
      */
     private Integer messageType;
     /**

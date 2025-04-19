@@ -23,7 +23,6 @@ public class AppChatMessageForm implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Schema(description = "主键，自增")
-    @NotNull(message = "主键，自增不能为空")
     private Integer id;
 
     @Schema(description = "发送者ID，关联到 app_user 表")

@@ -57,6 +57,8 @@
 
         <!-- 微信 jdk -->
         <weixin-java.version>4.5.5.B</weixin-java.version>
+
+        <jackson-version>2.15.2</jackson-version>
     </properties>
 
     <dependencies>
@@ -232,6 +234,11 @@
             <version>${weixin-java.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <version>${jackson-version}</version> <!-- 请根据你的 Jackson 版本选择合适的版本 -->
+        </dependency>
     </dependencies>
 
     <build>

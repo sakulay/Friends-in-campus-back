@@ -1,12 +1,11 @@
 package com.youlai.boot.app.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.youlai.boot.app.mapper.AppPostLikeMapper;
+import com.youlai.boot.app.model.mapper.AppPostLikeMapper;
 import com.youlai.boot.app.service.AppPostLikeService;
 import com.youlai.boot.app.model.entity.AppPostLike;
 import com.youlai.boot.app.model.form.AppPostLikeForm;
@@ -16,7 +15,6 @@ import com.youlai.boot.app.converter.AppPostLikeConverter;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.StrUtil;

@@ -1,21 +1,22 @@
 package com.youlai.boot.app.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
-import com.youlai.boot.app.model.dto.AppUserAuthInfo;
-import com.youlai.boot.app.model.entity.AppFriend;
-import com.youlai.boot.app.model.entity.AppUser;
 import com.youlai.boot.app.model.form.AppFriendForm;
-import com.youlai.boot.app.model.form.AppUserProfileForm;
+import com.youlai.boot.app.model.vo.FriendSimpleVO;
 import com.youlai.boot.app.service.AppFriendService;
-import com.youlai.boot.common.constant.MyConstans;
 import com.youlai.boot.common.exception.BusinessException;
 import com.youlai.boot.common.result.ResultCode;
+import com.youlai.boot.core.security.model.AppUserDetails;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.youlai.boot.app.mapper.AppFriendRequestMapper;
+import com.youlai.boot.app.model.mapper.AppFriendRequestMapper;
 import com.youlai.boot.app.service.AppFriendRequestService;
 import com.youlai.boot.app.model.entity.AppFriendRequest;
 import com.youlai.boot.app.model.form.AppFriendRequestForm;
@@ -25,7 +26,6 @@ import com.youlai.boot.app.converter.AppFriendRequestConverter;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.StrUtil;
@@ -42,7 +42,17 @@ import org.springframework.transaction.annotation.Transactional;
 public class AppFriendRequestServiceImpl extends ServiceImpl<AppFriendRequestMapper, AppFriendRequest> implements AppFriendRequestService {
 
     private final AppFriendRequestConverter appFriendRequestConverter;
-    private final AppFriendService appFriendService;
+
+    private AppFriendService appFriendService;
+
+    /**
+     * 使用该方式解决bean循环注入
+     * @param appFriendService
+     */
+    @Autowired
+    public void setAppFriendService(@Lazy AppFriendService appFriendService) {
+        this.appFriendService = appFriendService;
+    }
     /**
     * 获取好友申请分页列表
     *
@@ -57,7 +67,21 @@ public class AppFriendRequestServiceImpl extends ServiceImpl<AppFriendRequestMap
         );
         return pageVO;
     }
-    
+
+    @Override
+    public IPage<FriendSimpleVO> getAppFriendRequestWithInfoPage(AppFriendRequestQuery queryParams) {
+        // 从 JWT 令牌中获取 studentId
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String id = ((AppUserDetails)authentication.getPrincipal()).getStudentId();
+        Long studentId = Long.parseLong(id);
+
+        Page<FriendSimpleVO> pageVO = this.baseMapper.getAppFriendRequestWithInfoPage(
+                new Page<>(queryParams.getPageNum(), queryParams.getPageSize()),
+                queryParams,
+                studentId
+        );
+        return pageVO;
+    }
     /**
      * 获取好友申请表单数据
      *
@@ -78,6 +102,28 @@ public class AppFriendRequestServiceImpl extends ServiceImpl<AppFriendRequestMap
      */
     @Override
     public boolean saveAppFriendRequest(AppFriendRequestForm formData) {
+        // 检查申请记录是否存在，并且处于待验证状态(0-待处理，1-已通过，2-已拒绝，3-已撤回)
+        AppFriendRequestVO appFriendRequest = this.getFriendRequestBySenderIdAndReceiverId(formData.getSenderId(), formData.getReceiverId());
+        // 检查对方是否已经先申请了，如果申请了则通过对方的好友申请
+        AppFriendRequestVO theOtherSideRequest = this.getFriendRequestBySenderIdAndReceiverId(formData.getReceiverId(), formData.getSenderId());
+        if(theOtherSideRequest != null && theOtherSideRequest.getStatus() == 0) {
+            boolean check = this.passRequest(Long.valueOf(theOtherSideRequest.getId()));
+            // 通过对方的请求，返回成功信息
+            if (check) {
+                throw new BusinessException(ResultCode.HAS_ALREADY_BEEN_FRIENDS);
+            }
+        }
+        // 1、不存在则新增
+        if(appFriendRequest != null) {
+            // 2、存在根据状态判断, 如果是待处理则抛出待处理异常
+            if(appFriendRequest.getStatus() == 0) {
+                throw new BusinessException(ResultCode.FRIEND_REQUEST_ON_PENDING);
+            }
+            // 如果是已通过则抛出已通过异常
+            else if (appFriendRequest.getStatus() == 1) {
+                throw new BusinessException(ResultCode.ALREADY_IS_FRIEND);
+            }
+        }
         AppFriendRequest entity = appFriendRequestConverter.toEntity(formData);
         return this.save(entity);
     }
@@ -114,6 +160,27 @@ public class AppFriendRequestServiceImpl extends ServiceImpl<AppFriendRequestMap
             return appFriendService.saveAppFriend(friend_Sender) && appFriendService.saveAppFriend(friend_Receiver);
         } else throw new BusinessException(ResultCode.INVALID_FIREND_REQUEST);
     }
+
+    /**
+     * 拒绝好友请求
+     * @param id
+     * @return
+     */
+    @Override
+    public boolean rejectRequest(Long id) {
+        //1.检查申请记录是否存在，并且处于待验证状态(0-待处理，1-已通过，2-已拒绝，3-已撤回)
+        AppFriendRequest appFriendRequest = this.getById(id);
+        if (appFriendRequest != null && appFriendRequest.getStatus() == 0) {
+            //2.若存在，则将status字段的值设为2
+            UpdateWrapper<AppFriendRequest> wrapper = new UpdateWrapper<>();
+            wrapper
+                    .eq("id", id)
+                    .set("status", 2);
+            return this.update(null, wrapper);
+        } else {
+            throw new BusinessException(ResultCode.INVALID_FIREND_REQUEST);
+        }
+    }
     /**
      * 更新好友申请
      *
@@ -141,6 +208,14 @@ public class AppFriendRequestServiceImpl extends ServiceImpl<AppFriendRequestMap
                 .map(Long::parseLong)
                 .toList();
         return this.removeByIds(idList);
+    }
+
+    /**
+     * 通过senderId、receiverId获取好友申请记录
+     */
+    public AppFriendRequestVO getFriendRequestBySenderIdAndReceiverId(Long senderId, Long receiverId) {
+        AppFriendRequestVO appFriendRequestVO = this.baseMapper.getFriendRequestBySenderIdAndReceiverId(senderId, receiverId);
+        return appFriendRequestVO;
     }
 
 }

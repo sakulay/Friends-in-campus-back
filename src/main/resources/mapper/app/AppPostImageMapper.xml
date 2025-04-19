@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.youlai.boot.app.mapper.AppPostImageMapper">
+<mapper namespace="com.youlai.boot.app.model.mapper.AppPostImageMapper">
 
     <!-- 获取图文图片分页列表 -->
     <select id="getAppPostImagePage" resultType="com.youlai.boot.app.model.vo.AppPostImageVO">

@@ -53,7 +53,7 @@ public class Result<T> implements Serializable {
     }
 
     public static <T> Result<T> failed(IResultCode resultCode, String msg) {
-        return result(resultCode.getCode(), StrUtil.isNotBlank(msg) ? msg : resultCode.getMsg(), null);
+        return result(resultCode.getCode(), StrUtil.isNotBlank(resultCode.getMsg()) ? resultCode.getMsg() : msg, null);
     }
 
     private static <T> Result<T> result(IResultCode resultCode, T data) {

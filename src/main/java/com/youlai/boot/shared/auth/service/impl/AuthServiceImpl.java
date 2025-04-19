@@ -214,6 +214,18 @@ public class AuthServiceImpl implements AuthService {
         }
     }
 
+    @Override
+    public void appLogout() {
+        String token = SecurityUtils.getTokenFromRequest();
+        if (StrUtil.isNotBlank(token) && token.startsWith(SecurityConstants.APP_JWT_TOKEN_PREFIX)) {
+            token = token.substring(SecurityConstants.APP_JWT_TOKEN_PREFIX.length());
+            // 将JWT令牌加入黑名单
+            appTokenManger.blacklistToken(token);
+            // 清除Security上下文
+            SecurityContextHolder.clearContext();
+        }
+   }
+
     /**
      * 获取验证码
      *

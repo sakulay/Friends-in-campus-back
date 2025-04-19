@@ -9,12 +9,11 @@ import com.youlai.boot.common.exception.BusinessException;
 import com.youlai.boot.common.result.ResultCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.youlai.boot.app.mapper.AppUserMapper;
+import com.youlai.boot.app.model.mapper.AppUserMapper;
 import com.youlai.boot.app.service.AppUserService;
 import com.youlai.boot.app.model.entity.AppUser;
 import com.youlai.boot.app.model.form.AppUserForm;
@@ -180,9 +179,10 @@ public class AppUserServiceImpl extends ServiceImpl<AppUserMapper, AppUser> impl
                     .eq("student_id", studengId)
                     .set("auth_status", 1);
             this.update(null, wrapper);
-            //3.认证通过后，初始化学生个人信息：studentId、nickName、bio
+            //3.认证通过后，初始化学生个人信息：studentId、nickName、初始avatar、bio
             AppUserProfileForm appUserProfileForm = new AppUserProfileForm();
             appUserProfileForm.setStudentId(studengId);
+            appUserProfileForm.setAvatar("http://111.230.102.82:40061/i/2025/04/10/xk2ltx.png");
             appUserProfileForm.setBio(MyConstans.APP_USER_PROFILE_BIO);
             return appUserProfileService.saveAppUserProfile(appUserProfileForm);
         } else throw new BusinessException(ResultCode.USER_NON_EXISI);

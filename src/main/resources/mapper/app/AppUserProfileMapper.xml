@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.youlai.boot.app.mapper.AppUserProfileMapper">
+<mapper namespace="com.youlai.boot.app.model.mapper.AppUserProfileMapper">
 
     <!-- 获取用户个人信息分页列表 -->
     <select id="getAppUserProfilePage" resultType="com.youlai.boot.app.model.vo.AppUserProfileVO">
@@ -21,6 +21,22 @@
             app_user_profile
         <where>
         </where>
+    </select>
+
+    <select id="getByStudentId" resultType="com.youlai.boot.app.model.entity.AppUserProfile">
+        SELECT
+                id,
+                student_id,
+                nickname,
+                avatar,
+                gender,
+                bio,
+                is_deleted,
+                delete_url
+        FROM
+            app_user_profile
+        WHERE
+            student_id = #{studentId} and is_deleted = 0
     </select>
 
 </mapper>

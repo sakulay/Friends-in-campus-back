@@ -6,6 +6,7 @@ import com.youlai.boot.app.model.query.AppFriendQuery;
 import com.youlai.boot.app.model.vo.AppFriendVO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.youlai.boot.app.model.vo.FriendSimpleVO;
 
 /**
  * 用户好友关系服务类
@@ -55,4 +56,9 @@ public interface AppFriendService extends IService<AppFriend> {
      */
     boolean deleteAppFriends(String ids);
 
+    IPage<FriendSimpleVO> getAppFriendListByStudentId(Long studentId, String keyword);
+
+    Integer getAppFriendRelationship(Long studentId, Long friendId);
+
+    FriendSimpleVO getAppFriendInfo(Long studentId, Long friendId);
 }

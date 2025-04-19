@@ -6,6 +6,10 @@ import com.youlai.boot.app.model.query.AppChatMessageQuery;
 import com.youlai.boot.app.model.vo.AppChatMessageVO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.youlai.boot.app.model.vo.MessageVO;
+import com.youlai.boot.app.model.vo.UnreadVO;
+
+import java.util.List;
 
 /**
  * 用户聊天记录服务类
@@ -55,4 +59,17 @@ public interface AppChatMessageService extends IService<AppChatMessage> {
      */
     boolean deleteAppChatMessages(String ids);
 
+    /**
+     * 处理未读消息的更新
+     * @param senderId
+     * @param receiverId
+     * @return
+     */
+    String findBySenderAndReceiverAndType(Long senderId, Long receiverId);
+
+    List<UnreadVO> getAppChatUnread(Long id);
+
+    List<MessageVO> getAppChatMessages(Long id, Long otherId);
+
+    public boolean readed(Long senderId, Long receiverId);
 }
