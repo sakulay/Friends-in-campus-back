@@ -46,5 +46,5 @@ public class AppPostComment extends BaseEntity {
     /**
      * 审核状态（0 - 待审核，1 - 已通过， 2 - 禁用）
      */
-    private Integer status;
+    private Integer status = 1;
 }

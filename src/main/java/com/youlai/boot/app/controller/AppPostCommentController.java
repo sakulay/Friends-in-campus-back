@@ -73,7 +73,7 @@ public class AppPostCommentController  {
     @PreAuthorize("@ss.hasPerm('app:appPostComment:edit')")
     public Result<Void> updateAppPostComment(
             @Parameter(description = "图文评论ID") @PathVariable Long id,
-            @RequestBody @Validated AppPostCommentForm formData
+            @RequestBody AppPostCommentForm formData
     ) {
         boolean result = appPostCommentService.updateAppPostComment(id, formData);
         return Result.judge(result);

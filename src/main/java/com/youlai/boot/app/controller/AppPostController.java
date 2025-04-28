@@ -63,7 +63,7 @@ public class AppPostController  {
     @PreAuthorize("@ss.hasPerm('app:appPost:edit')")
     public Result<Void> updateAppPost(
             @Parameter(description = "图文内容ID") @PathVariable Long id,
-            @RequestBody @Validated AppPostForm formData
+            @RequestBody AppPostForm formData
     ) {
         boolean result = appPostService.updateAppPost(id, formData);
         return Result.judge(result);

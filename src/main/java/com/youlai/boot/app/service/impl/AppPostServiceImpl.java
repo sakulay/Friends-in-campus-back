@@ -226,6 +226,7 @@ public class AppPostServiceImpl extends ServiceImpl<AppPostMapper, AppPost> impl
     public boolean updateAppPost(Long id, AppPostForm formData) {
         // 1.更新图文的文字内容部分
         AppPost entity = appPostConverter.toEntity(formData);
+        entity.setId(id);
         boolean updated = this.updateById(entity);
         if (!updated) {
             return false;
@@ -233,42 +234,43 @@ public class AppPostServiceImpl extends ServiceImpl<AppPostMapper, AppPost> impl
 
         // 2.获取formData的图片列表
         List<AppPostImageForm> formDataImageList = formData.getImageList();
+        if(formDataImageList != null) {
+            // 3.从数据库获取文章对应的图片列表
+            List<AppPostImage> dbImageList = appPostImageMapper.selectList(
+                    new LambdaQueryWrapper<AppPostImage>()
+                            .eq(AppPostImage::getPostId, id)
+            );
 
-        // 3.从数据库获取文章对应的图片列表
-        List<AppPostImage> dbImageList = appPostImageMapper.selectList(
-                new LambdaQueryWrapper<AppPostImage>()
-                        .eq(AppPostImage::getPostId, id)
-        );
+            // 4.比较两个列表，需要分出要删除的，和新增的图片
+            List<Long> formDataImageIds = formDataImageList.stream()
+                    .map(AppPostImageForm::getId)
+                    .filter(Objects::nonNull).toList();
 
-        // 4.比较两个列表，需要分出要删除的，和新增的图片
-        List<Long> formDataImageIds = formDataImageList.stream()
-                .map(AppPostImageForm::getId)
-                .filter(Objects::nonNull).toList();
+            List<AppPostImage> imagesToDelete = dbImageList.stream()
+                    .filter(dbImage -> !formDataImageIds.contains(dbImage.getId())).toList();
 
-        List<AppPostImage> imagesToDelete = dbImageList.stream()
-                .filter(dbImage -> !formDataImageIds.contains(dbImage.getId())).toList();
+            List<AppPostImageForm> imagesToAdd = formDataImageList.stream()
+                    .filter(form -> form.getId() == null).toList();
 
-        List<AppPostImageForm> imagesToAdd = formDataImageList.stream()
-                .filter(form -> form.getId() == null).toList();
-
-        // 5.删除要删除的图片
-        if (!imagesToDelete.isEmpty()) {
-            List<Long> deleteIds = imagesToDelete.stream()
-                    .map(AppPostImage::getId)
-                    .collect(Collectors.toList());
-            appPostImageMapper.deleteBatchIds(deleteIds);
-        }
+            // 5.删除要删除的图片
+            if (!imagesToDelete.isEmpty()) {
+                List<Long> deleteIds = imagesToDelete.stream()
+                        .map(AppPostImage::getId)
+                        .collect(Collectors.toList());
+                appPostImageMapper.deleteBatchIds(deleteIds);
+            }
 
             // 6.新增要新增的图片
-        if (!imagesToAdd.isEmpty()) {
-            List<AppPostImage> newImages = imagesToAdd.stream()
-                    .map(form -> {
-                        AppPostImage image = appPostImageConverter.toEntity(form);
-                        image.setPostId(id);
-                        return image;
-                    })
-                    .collect(Collectors.toList());
-            appPostImageService.saveBatch(newImages);
+            if (!imagesToAdd.isEmpty()) {
+                List<AppPostImage> newImages = imagesToAdd.stream()
+                        .map(form -> {
+                            AppPostImage image = appPostImageConverter.toEntity(form);
+                            image.setPostId(id);
+                            return image;
+                        })
+                        .collect(Collectors.toList());
+                appPostImageService.saveBatch(newImages);
+            }
         }
 
         // 清空与该图文内容相关的 Redis 缓存

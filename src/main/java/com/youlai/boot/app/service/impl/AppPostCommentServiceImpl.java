@@ -159,6 +159,7 @@ public class AppPostCommentServiceImpl extends ServiceImpl<AppPostCommentMapper,
     @Override
     public boolean updateAppPostComment(Long id,AppPostCommentForm formData) {
         AppPostComment entity = appPostCommentConverter.toEntity(formData);
+        entity.setId(id);
         return this.updateById(entity);
     }
     

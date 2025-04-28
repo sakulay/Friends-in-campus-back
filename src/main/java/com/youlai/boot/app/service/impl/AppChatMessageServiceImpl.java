@@ -156,7 +156,7 @@ public class AppChatMessageServiceImpl extends ServiceImpl<AppChatMessageMapper,
      */
     @Override
     public boolean readed(Long senderId, Long receiverId) {
-        boolean update = false;
+        boolean update = true;
         AppChatMessage existing = this.lambdaQuery()
                 .eq(AppChatMessage::getSenderId, senderId)
                 .eq(AppChatMessage::getReceiverId, receiverId)

@@ -102,6 +102,7 @@ public enum ResultCode implements IResultCode, Serializable {
     FRIEND_REQUEST_ON_PENDING("A0404", "好友申请待处理，请勿重复申请"),
     ALREADY_IS_FRIEND("A0405", "你们已经是好友"),
     HAS_ALREADY_BEEN_FRIENDS("A0406", "你们已经成为好友"),
+    NEWS_ALREADY_EXISTS("A0407", "该新闻已存在"),
     REQUEST_REQUIRED_PARAMETER_IS_EMPTY("A0410", "请求必填参数为空"),
 
     REQUEST_PARAMETER_VALUE_EXCEEDS_ALLOWED_RANGE("A0420", "请求参数值超出允许的范围"),

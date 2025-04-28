@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youlai.boot.app.model.mapper.AppComplaintMapper">
+
+    <!-- 获取用户举报记录分页列表 -->
+    <select id="getAppComplaintPage" resultType="com.youlai.boot.app.model.vo.AppComplaintVO">
+        SELECT
+                id,
+                user_id,
+                complaint_type,
+                complaint_description,
+                complaint_target_type,
+                complaint_target_id,
+                status,
+                create_time,
+                update_time,
+                is_deleted
+        FROM
+            app_complaint
+        WHERE
+            is_deleted = 0
+        <where>
+
+        </where>
+    </select>
+
+</mapper>
