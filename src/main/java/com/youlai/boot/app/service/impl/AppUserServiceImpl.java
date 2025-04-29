@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.youlai.boot.app.model.dto.AppUserAuthInfo;
 import com.youlai.boot.app.model.form.AppUserProfileForm;
 import com.youlai.boot.app.service.AppUserProfileService;
-import com.youlai.boot.common.constant.MyConstans;
+import com.youlai.boot.common.base.constant.MyConstans;
 import com.youlai.boot.common.exception.BusinessException;
 import com.youlai.boot.common.result.ResultCode;
 import lombok.RequiredArgsConstructor;

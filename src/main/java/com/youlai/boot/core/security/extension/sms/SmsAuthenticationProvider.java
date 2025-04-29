@@ -2,7 +2,7 @@ package com.youlai.boot.core.security.extension.sms;
 
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.youlai.boot.common.constant.RedisConstants;
+import com.youlai.boot.common.base.constant.RedisConstants;
 import com.youlai.boot.core.security.model.SysUserDetails;
 import com.youlai.boot.system.model.dto.UserAuthInfo;
 import com.youlai.boot.system.service.UserService;

@@ -2,7 +2,7 @@ package com.youlai.boot.core.security.service;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
-import com.youlai.boot.common.constant.SecurityConstants;
+import com.youlai.boot.common.base.constant.SecurityConstants;
 import com.youlai.boot.core.security.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

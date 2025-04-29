@@ -2,8 +2,8 @@ package com.youlai.boot.core.security.util;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
-import com.youlai.boot.common.constant.SecurityConstants;
-import com.youlai.boot.common.constant.SystemConstants;
+import com.youlai.boot.common.base.constant.SecurityConstants;
+import com.youlai.boot.common.base.constant.SystemConstants;
 import com.youlai.boot.core.security.model.SysUserDetails;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpHeaders;

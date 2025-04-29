@@ -1,8 +1,8 @@
 package com.youlai.boot.core.filter;
 
 import cn.hutool.core.convert.Convert;
-import com.youlai.boot.common.constant.RedisConstants;
-import com.youlai.boot.common.constant.SystemConstants;
+import com.youlai.boot.common.base.constant.RedisConstants;
+import com.youlai.boot.common.base.constant.SystemConstants;
 import com.youlai.boot.common.result.ResultCode;
 import com.youlai.boot.common.util.IPUtils;
 import com.youlai.boot.common.util.ResponseUtils;

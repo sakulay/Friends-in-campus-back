@@ -14,10 +14,14 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 用户个人信息服务实现类
@@ -30,6 +34,14 @@ import java.util.List;
 public class AppUserProfileServiceImpl extends ServiceImpl<AppUserProfileMapper, AppUserProfile> implements AppUserProfileService {
     private final AppUserProfileConverter appUserProfileConverter;
     private final AppUserProfileMapper appUserProfileMapper;
+    private final RedisTemplate<String, Object> redisTemplate;
+
+    private static final String USER_PROFILE_KEY = "app:user:profile:";
+    private static final String USER_SIMPLE_INFO_KEY = "app:user:simple:info:";
+    private static final String POST_PAGE_KEY = "app:post:page:*";
+    private static final String COMMENT_LIST_KEY = "app:post:comment:list:*";
+    private static final long CACHE_EXPIRE_TIME = 24; // 缓存过期时间（小时）
+
     /**
     * 获取用户个人信息分页列表
     *
@@ -53,14 +65,32 @@ public class AppUserProfileServiceImpl extends ServiceImpl<AppUserProfileMapper,
      */
     @Override
     public AppUserProfileForm getAppUserProfileFormData(Long id) {
-        AppUserProfile entity = this.getById(id);
-        return appUserProfileConverter.toForm(entity);
+        String cacheKey = USER_PROFILE_KEY + id;
+        AppUserProfileForm formData = (AppUserProfileForm) redisTemplate.opsForValue().get(cacheKey);
+
+        if (formData == null) {
+            AppUserProfile entity = this.getById(id);
+            formData = appUserProfileConverter.toForm(entity);
+            // 写入缓存
+            redisTemplate.opsForValue().set(cacheKey, formData, CACHE_EXPIRE_TIME, TimeUnit.HOURS);
+        }
+
+        return formData;
     }
 
     @Override
     public AppUserProfileForm getAppUserSimpleInfo(Long studentId) {
-        AppUserProfile entity = appUserProfileMapper.getByStudentId(studentId);
-        return appUserProfileConverter.toForm(entity);
+        String cacheKey = USER_SIMPLE_INFO_KEY + studentId;
+        AppUserProfileForm formData = (AppUserProfileForm) redisTemplate.opsForValue().get(cacheKey);
+
+        if (formData == null) {
+            AppUserProfile entity = appUserProfileMapper.getByStudentId(studentId);
+            formData = appUserProfileConverter.toForm(entity);
+            // 写入缓存
+            redisTemplate.opsForValue().set(cacheKey, formData, CACHE_EXPIRE_TIME, TimeUnit.HOURS);
+        }
+
+        return formData;
     }
 
     /**
@@ -74,7 +104,14 @@ public class AppUserProfileServiceImpl extends ServiceImpl<AppUserProfileMapper,
         // 初始化昵称为"学生xx"
         if(formData.getNickname() == null) formData.setNickname("学生"+formData.getStudentId());
         AppUserProfile entity = appUserProfileConverter.toEntity(formData);
-        return this.save(entity);
+        boolean saved = this.save(entity);
+        
+        if (saved) {
+            // 清除相关缓存
+            clearUserCache(formData.getStudentId());
+        }
+        
+        return saved;
     }
 
     /**
@@ -85,10 +122,18 @@ public class AppUserProfileServiceImpl extends ServiceImpl<AppUserProfileMapper,
      * @return
      */
     @Override
-    public boolean updateAppUserProfile(Long id,AppUserProfileForm formData) {
+    @Transactional(rollbackFor = Exception.class)
+    public boolean updateAppUserProfile(Long id, AppUserProfileForm formData) {
         formData.setId(id);
         AppUserProfile entity = appUserProfileConverter.toEntity(formData);
-        return this.updateById(entity);
+        boolean updated = this.updateById(entity);
+        
+        if (updated) {
+            // 清除相关缓存
+            clearUserCache(formData.getStudentId());
+        }
+        
+        return updated;
     }
 
     /**
@@ -100,31 +145,71 @@ public class AppUserProfileServiceImpl extends ServiceImpl<AppUserProfileMapper,
     @Override
     public boolean deleteAppUserProfiles(String ids) {
         Assert.isTrue(StrUtil.isNotBlank(ids), "删除的用户个人信息数据为空");
-        // 逻辑删除
         List<Long> idList = Arrays.stream(ids.split(","))
                 .map(Long::parseLong)
                 .toList();
-        return this.removeByIds(idList);
+        
+        // 获取要删除的用户信息
+        List<AppUserProfile> profiles = this.listByIds(idList);
+        boolean deleted = this.removeByIds(idList);
+        
+        if (deleted) {
+            // 清除相关缓存
+            for (AppUserProfile profile : profiles) {
+                clearUserCache(profile.getStudentId());
+            }
+        }
+        
+        return deleted;
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean updateAppUserProfileByStudentId(Long studentId, AppUserProfileForm formData) {
         LambdaQueryWrapper<AppUserProfile> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(AppUserProfile::getStudentId, studentId);
         AppUserProfile userProfile = getOne(wrapper);
         if (userProfile != null) {
-            // 将formData中的数据复制到userProfile对象中
-            // 这里假设有一个工具类或方法来完成这个复制操作
-            // BeanUtils.copyProperties(formData, userProfile);
-            // 或者手动复制属性
+            // 更新用户信息
             userProfile.setNickname(formData.getNickname());
             userProfile.setAvatar(formData.getAvatar());
             userProfile.setGender(formData.getGender());
             userProfile.setBio(formData.getBio());
             userProfile.setDeleteUrl(formData.getDeleteUrl());
-            // ... 其他属性的复制 ...
-            return updateById(userProfile);
+            boolean updated = updateById(userProfile);
+            
+            if (updated) {
+                // 清除相关缓存
+                clearUserCache(studentId);
+            }
+            
+            return updated;
         }
         return false;
+    }
+
+    /**
+     * 清除用户相关的所有缓存
+     */
+    private void clearUserCache(Long studentId) {
+        // 清除用户个人信息缓存
+        String profileKey = USER_PROFILE_KEY + studentId;
+        redisTemplate.delete(profileKey);
+        
+        // 清除用户简单信息缓存
+        String simpleInfoKey = USER_SIMPLE_INFO_KEY + studentId;
+        redisTemplate.delete(simpleInfoKey);
+        
+        // 清除帖子列表中的用户信息缓存
+        Set<String> postPageKeys = redisTemplate.keys(POST_PAGE_KEY);
+        if (postPageKeys != null && !postPageKeys.isEmpty()) {
+            redisTemplate.delete(postPageKeys);
+        }
+        
+        // 清除评论列表中的用户信息缓存
+        Set<String> commentListKeys = redisTemplate.keys(COMMENT_LIST_KEY);
+        if (commentListKeys != null && !commentListKeys.isEmpty()) {
+            redisTemplate.delete(commentListKeys);
+        }
     }
 }

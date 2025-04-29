@@ -1,4 +1,4 @@
-package com.youlai.boot.common.constant;
+package com.youlai.boot.common.base.constant;
 
 /**
  * 系统常量

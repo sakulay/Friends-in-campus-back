@@ -1,7 +1,7 @@
 package com.youlai.boot.core.security.filter;
 
 import cn.hutool.core.util.StrUtil;
-import com.youlai.boot.common.constant.SecurityConstants;
+import com.youlai.boot.common.base.constant.SecurityConstants;
 import com.youlai.boot.common.result.ResultCode;
 import com.youlai.boot.common.util.ResponseUtils;
 import com.youlai.boot.core.security.manager.AppJwtTokenManger;

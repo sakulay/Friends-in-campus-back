@@ -15,7 +15,7 @@ import com.youlai.boot.system.model.entity.RoleMenu;
 import com.youlai.boot.system.model.form.RoleForm;
 import com.youlai.boot.system.model.query.RolePageQuery;
 import com.youlai.boot.system.model.vo.RolePageVO;
-import com.youlai.boot.common.constant.SystemConstants;
+import com.youlai.boot.common.base.constant.SystemConstants;
 import com.youlai.boot.common.model.Option;
 import com.youlai.boot.core.security.util.SecurityUtils;
 import com.youlai.boot.system.service.RoleMenuService;

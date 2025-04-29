@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
@@ -41,8 +42,10 @@ public class AppPostVO implements Serializable {
     @Schema(description = "评论数")
     private Integer commentCount;
     @Schema(description = "发布图文时间")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createTime;
     @Schema(description = "更新时间")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updateTime;
     @Schema(description = "文章状态（0-待审核，1-审核通过，2-禁用）")
     private Integer status;

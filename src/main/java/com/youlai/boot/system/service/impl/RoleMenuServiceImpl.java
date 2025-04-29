@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.youlai.boot.system.mapper.RoleMenuMapper;
 import com.youlai.boot.system.model.bo.RolePermsBO;
 import com.youlai.boot.system.model.entity.RoleMenu;
-import com.youlai.boot.common.constant.SecurityConstants;
+import com.youlai.boot.common.base.constant.SecurityConstants;
 import com.youlai.boot.system.service.RoleMenuService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;

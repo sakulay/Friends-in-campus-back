@@ -13,7 +13,7 @@ import com.youlai.boot.system.model.entity.Dept;
 import com.youlai.boot.system.model.form.DeptForm;
 import com.youlai.boot.system.model.query.DeptQuery;
 import com.youlai.boot.system.model.vo.DeptVO;
-import com.youlai.boot.common.constant.SystemConstants;
+import com.youlai.boot.common.base.constant.SystemConstants;
 import com.youlai.boot.common.enums.StatusEnum;
 import com.youlai.boot.common.model.Option;
 import com.youlai.boot.system.service.DeptService;

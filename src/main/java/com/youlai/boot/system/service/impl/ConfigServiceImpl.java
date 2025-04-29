@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.youlai.boot.common.constant.RedisConstants;
+import com.youlai.boot.common.base.constant.RedisConstants;
 import com.youlai.boot.system.converter.ConfigConverter;
 import com.youlai.boot.system.mapper.ConfigMapper;
 import com.youlai.boot.system.model.entity.Config;

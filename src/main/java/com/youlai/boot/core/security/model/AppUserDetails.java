@@ -1,9 +1,8 @@
 package com.youlai.boot.core.security.model;
 
 import cn.hutool.core.collection.CollectionUtil;
-import cn.hutool.core.util.ObjectUtil;
 import com.youlai.boot.app.model.dto.AppUserAuthInfo;
-import com.youlai.boot.common.constant.SecurityConstants;
+import com.youlai.boot.common.base.constant.SecurityConstants;
 import com.youlai.boot.system.model.dto.UserAuthInfo;
 import lombok.Data;
 import lombok.NoArgsConstructor;
