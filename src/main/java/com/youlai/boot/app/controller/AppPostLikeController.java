@@ -78,4 +78,15 @@ public class AppPostLikeController  {
         boolean result = appPostLikeService.deleteAppPostLikes(ids);
         return Result.judge(result);
     }
+
+    @Operation(summary = "取消点赞")
+    @DeleteMapping
+    @PreAuthorize("@ss.hasPerm('app:appPostLike:delete')")
+    public Result<Void> cancelLike(
+        @Parameter(description = "用户ID") @RequestParam Long userId,
+        @Parameter(description = "帖子ID") @RequestParam Long postId
+    ) {
+        boolean result = appPostLikeService.cancelLike(userId, postId);
+        return Result.judge(result);
+    }
 }

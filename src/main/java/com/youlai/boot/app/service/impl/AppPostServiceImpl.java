@@ -77,9 +77,14 @@ public class AppPostServiceImpl extends ServiceImpl<AppPostMapper, AppPost> impl
     @Override
     @Transactional
     public IPage<AppPostVO> getAppPostPage(AppPostQuery queryParams) {
-        // 生成缓存键
-        String cacheKey = POST_PAGE_KEY + queryParams.getPageNum() + ":" + queryParams.getPageSize() + ":" + queryParams.getStatus() + ":" + queryParams.getUserId() + ":" + queryParams.getTitle();
-        IPage<AppPostVO> pageVO = (IPage<AppPostVO>) redisTemplate.opsForValue().get(cacheKey);
+        String cacheKey = "";
+        IPage<AppPostVO> pageVO = null;
+        if(queryParams.getPostIds() == null) {
+            // 生成缓存键
+            cacheKey = POST_PAGE_KEY + queryParams.getPageNum() + ":" + queryParams.getPageSize() + ":" + queryParams.getStatus() + ":" + queryParams.getUserId() + ":" + queryParams.getTitle();
+            pageVO = (IPage<AppPostVO>) redisTemplate.opsForValue().get(cacheKey);
+        }
+
 
         if (pageVO == null) {
             pageVO = this.baseMapper.getAppPostPage(
@@ -173,9 +178,10 @@ public class AppPostServiceImpl extends ServiceImpl<AppPostMapper, AppPost> impl
                 post.setImageList(imageListMap.getOrDefault(post.getId(), Collections.emptyList()));
                 post.setUserInfo(friendInfoMap.get(post.getUserId()));
             });
-
-            // 写入缓存
-            redisTemplate.opsForValue().set(cacheKey, pageVO, CACHE_EXPIRE_TIME, TimeUnit.HOURS);
+            if(queryParams.getPostIds() == null) {
+                // 写入缓存
+                redisTemplate.opsForValue().set(cacheKey, pageVO, CACHE_EXPIRE_TIME, TimeUnit.HOURS);
+            }
         }
 
         return pageVO;

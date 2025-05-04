@@ -25,4 +25,10 @@ public class AppPostQuery extends BasePageQuery {
 
     @Schema(description = "状态")
     private Integer status;
+
+    @Schema(description = "帖子ID列表")
+    private List<Long> postIds;
+
+    @Schema(description = "是否按照postIds顺序排序")
+    private Boolean orderByPostIds = false;
 }

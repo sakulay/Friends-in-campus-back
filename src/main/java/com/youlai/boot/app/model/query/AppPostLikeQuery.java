@@ -17,5 +17,9 @@ import java.util.List;
 @Getter
 @Setter
 public class AppPostLikeQuery extends BasePageQuery {
+    @Schema(description = "点赞用户ID")
+    private Long userId;
 
+    @Schema(description = "图文内容ID")
+    private Long postId;
 }

@@ -55,4 +55,12 @@ public interface AppPostLikeService extends IService<AppPostLike> {
      */
     boolean deleteAppPostLikes(String ids);
 
+    /**
+     * 取消点赞
+     *
+     * @param userId 用户ID
+     * @param postId 帖子ID
+     * @return
+     */
+    boolean cancelLike(Long userId, Long postId);
 }

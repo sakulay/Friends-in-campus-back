@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youlai.boot.app.model.mapper.AppPostBrowseRecordMapper">
+
+    <!-- 获取帖子浏览记录分页列表 -->
+    <select id="getAppPostBrowseRecordPage" resultType="com.youlai.boot.app.model.vo.AppPostBrowseRecordVO">
+        SELECT
+            id,
+            viewer_id,
+            post_id,
+            browse_time,
+            create_time,
+            update_time,
+            is_deleted
+        FROM
+            app_post_browse_record
+        <where>
+            is_deleted = 0
+            <if test="queryParams.viewerId != null">
+                AND viewer_id = #{queryParams.viewerId}
+            </if>
+            <if test="queryParams.postId != null">
+                AND post_id = #{queryParams.postId}
+            </if>
+            <if test="queryParams.startBrowseTime != null">
+                AND browse_time >= #{queryParams.startBrowseTime}
+            </if>
+            <if test="queryParams.endBrowseTime != null">
+                AND browse_time &lt;= #{queryParams.endBrowseTime}
+            </if>
+        </where>
+        ORDER BY browse_time DESC
+    </select>
+
+</mapper> 

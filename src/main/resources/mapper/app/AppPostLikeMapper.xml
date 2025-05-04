@@ -13,6 +13,13 @@
         FROM
             app_post_like
         <where>
+            is_deleted = 0
+            <if test="queryParams.userId != null">
+                AND user_id = #{queryParams.userId}
+            </if>
+            <if test="queryParams.postId != null">
+                AND post_id = #{queryParams.postId}
+            </if>
         </where>
     </select>
 
