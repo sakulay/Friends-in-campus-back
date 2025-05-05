@@ -5,9 +5,11 @@ import com.youlai.boot.app.converter.AppPostImageConverter;
 import com.youlai.boot.app.model.mapper.AppPostCommentMapper;
 import com.youlai.boot.app.model.mapper.AppPostImageMapper;
 import com.youlai.boot.app.model.mapper.AppPostLikeMapper;
+import com.youlai.boot.app.model.mapper.AppPostFavoritesMapper;
 import com.youlai.boot.app.model.entity.AppPostComment;
 import com.youlai.boot.app.model.entity.AppPostImage;
 import com.youlai.boot.app.model.entity.AppPostLike;
+import com.youlai.boot.app.model.entity.AppPostFavorites;
 import com.youlai.boot.app.model.form.AppPostImageForm;
 import com.youlai.boot.app.model.vo.AppPostImageVO;
 import com.youlai.boot.app.model.vo.FriendSimpleVO;
@@ -61,11 +63,13 @@ public class AppPostServiceImpl extends ServiceImpl<AppPostMapper, AppPost> impl
     private final AppFriendService appFriendService;
     private final RedisTemplate<String, Object> redisTemplate;
     private final AppJwtTokenManger appJwtTokenManger;
+    private final AppPostFavoritesMapper appPostFavoritesMapper;
 
     private static final String POST_PAGE_KEY = "app:post:page:";
     private static final String POST_DETAIL_KEY = "app:post:detail:";
     private static final String POST_LIKE_COUNT_KEY = "app:post:like:count:";
     private static final String POST_COMMENT_COUNT_KEY = "app:post:comment:count:";
+    private static final String POST_FAVORITE_COUNT_KEY = "app:post:favorite:count:";
     private static final long CACHE_EXPIRE_TIME = 24; // 缓存过期时间（小时）
 
     /**
@@ -84,7 +88,6 @@ public class AppPostServiceImpl extends ServiceImpl<AppPostMapper, AppPost> impl
             cacheKey = POST_PAGE_KEY + queryParams.getPageNum() + ":" + queryParams.getPageSize() + ":" + queryParams.getStatus() + ":" + queryParams.getUserId() + ":" + queryParams.getTitle();
             pageVO = (IPage<AppPostVO>) redisTemplate.opsForValue().get(cacheKey);
         }
-
 
         if (pageVO == null) {
             pageVO = this.baseMapper.getAppPostPage(
@@ -163,6 +166,27 @@ public class AppPostServiceImpl extends ServiceImpl<AppPostMapper, AppPost> impl
                             (v1, v2) -> v1
                     ));
 
+            // 查询收藏数
+            Map<Long, Integer> favoriteCountMap = postIds.stream()
+                    .collect(Collectors.toMap(
+                            postId -> postId,
+                            postId -> {
+                                String favoriteCountKey = POST_FAVORITE_COUNT_KEY + postId;
+                                Object count = redisTemplate.opsForValue().get(favoriteCountKey);
+                                if (count == null) {
+                                    int dbCount = appPostFavoritesMapper.selectCount(
+                                            new LambdaQueryWrapper<AppPostFavorites>()
+                                                    .eq(AppPostFavorites::getPostId, postId)
+                                                    .eq(AppPostFavorites::getIsDeleted, 0)
+                                    ).intValue();
+                                    redisTemplate.opsForValue().set(favoriteCountKey, dbCount, CACHE_EXPIRE_TIME, TimeUnit.HOURS);
+                                    return dbCount;
+                                }
+                                return Integer.parseInt(count.toString());
+                            },
+                            (v1, v2) -> v1
+                    ));
+
             // 查询图片列表
             Map<Long, List<AppPostImageVO>> imageListMap = appPostImageMapper.selectList(
                     new LambdaQueryWrapper<AppPostImage>()
@@ -175,6 +199,7 @@ public class AppPostServiceImpl extends ServiceImpl<AppPostMapper, AppPost> impl
             pageVO.getRecords().forEach(post -> {
                 post.setLikeCount(likeCountMap.getOrDefault(post.getId(), 0));
                 post.setCommentCount(commentCountMap.getOrDefault(post.getId(), 0));
+                post.setFavoriteCount(favoriteCountMap.getOrDefault(post.getId(), 0));
                 post.setImageList(imageListMap.getOrDefault(post.getId(), Collections.emptyList()));
                 post.setUserInfo(friendInfoMap.get(post.getUserId()));
             });
@@ -397,6 +422,12 @@ public class AppPostServiceImpl extends ServiceImpl<AppPostMapper, AppPost> impl
         Set<String> commentCountKeys = redisTemplate.keys(POST_COMMENT_COUNT_KEY + "*");
         if (commentCountKeys != null && !commentCountKeys.isEmpty()) {
             redisTemplate.delete(commentCountKeys);
+        }
+
+        // 清除收藏数缓存
+        Set<String> favoriteCountKeys = redisTemplate.keys(POST_FAVORITE_COUNT_KEY + "*");
+        if (favoriteCountKeys != null && !favoriteCountKeys.isEmpty()) {
+            redisTemplate.delete(favoriteCountKeys);
         }
     }
 

@@ -41,6 +41,8 @@ public class AppPostVO implements Serializable {
     private Integer likeCount;
     @Schema(description = "评论数")
     private Integer commentCount;
+    @Schema(description = "收藏数")
+    private Integer favoriteCount;
     @Schema(description = "发布图文时间")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createTime;

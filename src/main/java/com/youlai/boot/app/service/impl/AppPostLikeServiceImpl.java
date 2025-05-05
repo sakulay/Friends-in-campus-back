@@ -43,6 +43,7 @@ public class AppPostLikeServiceImpl extends ServiceImpl<AppPostLikeMapper, AppPo
     private static final String POST_PAGE_KEY = "app:post:page:";
     private static final String POST_DETAIL_KEY = "app:post:detail:";
     private static final String POST_LIKE_COUNT_KEY = "app:post:like:count:";
+    private static final String POST_FAVORITE_COUNT_KEY = "app:post:favorite:count:";
     private static final long CACHE_EXPIRE_TIME = 24; // 缓存过期时间（小时）
 
     /**
@@ -204,6 +205,11 @@ public class AppPostLikeServiceImpl extends ServiceImpl<AppPostLikeMapper, AppPo
             String likeCountKey = POST_LIKE_COUNT_KEY + postId;
             redisTemplate.delete(likeCountKey);
             log.info("清除点赞数缓存成功，key: {}", likeCountKey);
+
+            // 清除收藏数缓存
+            String favoriteCountKey = POST_FAVORITE_COUNT_KEY + postId;
+            redisTemplate.delete(favoriteCountKey);
+            log.info("清除收藏数缓存成功，key: {}", favoriteCountKey);
 
         } catch (Exception e) {
             log.error("清除缓存失败", e);

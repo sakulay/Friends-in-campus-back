@@ -40,6 +40,10 @@ public class AppPost extends BaseEntity {
      */
     private Integer commentCount;
     /**
+     * 收藏数
+     */
+    private Integer favoriteCount;
+    /**
      * 是否删除(1-删除，0-未删除)
      */
     private Integer isDeleted;

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youlai.boot.app.model.mapper.AppPostFavoritesMapper">
+
+    <!-- 获取帖子收藏记录分页列表 -->
+    <select id="getAppPostFavoritesPage" resultType="com.youlai.boot.app.model.vo.AppPostFavoritesVO">
+        SELECT
+            id,
+            user_id,
+            post_id,
+            favorite_time,
+            create_time,
+            update_time,
+            is_deleted
+        FROM
+            app_post_favorites
+        <where>
+            is_deleted = 0
+            <if test="queryParams.viewerId != null">
+                AND user_id = #{queryParams.viewerId}
+            </if>
+            <if test="queryParams.postId != null">
+                AND post_id = #{queryParams.postId}
+            </if>
+            <if test="queryParams.startFavoriteTime != null">
+                AND favorite_time >= #{queryParams.startFavoriteTime}
+            </if>
+            <if test="queryParams.endFavoriteTime != null">
+                AND favorite_time &lt;= #{queryParams.endFavoriteTime}
+            </if>
+        </where>
+        ORDER BY favorite_time DESC
+    </select>
+
+</mapper>

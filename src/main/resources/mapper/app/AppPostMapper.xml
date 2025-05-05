@@ -11,6 +11,7 @@
         p.content,
         p.like_count,
         p.comment_count,
+        p.favorite_count,
         p.create_time,
         p.update_time,
         p.status
