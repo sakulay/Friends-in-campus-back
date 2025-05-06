@@ -30,5 +30,5 @@ public class AppPostQuery extends BasePageQuery {
     private List<Long> postIds;
 
     @Schema(description = "是否按照postIds顺序排序")
-    private Boolean orderByPostIds = false;
+    private Boolean orderByPostIds = true;
 }
