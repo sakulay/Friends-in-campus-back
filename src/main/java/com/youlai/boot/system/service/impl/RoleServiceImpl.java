@@ -112,6 +112,7 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
 
         String roleCode = roleForm.getCode();
         long count = this.count(new LambdaQueryWrapper<Role>()
+                .eq(Role::getIsDeleted, 0) // ✅ 只查未被逻辑删除的记录
                 .ne(roleId != null, Role::getId, roleId)
                 .and(wrapper ->
                         wrapper.eq(Role::getCode, roleCode).or().eq(Role::getName, roleForm.getName())

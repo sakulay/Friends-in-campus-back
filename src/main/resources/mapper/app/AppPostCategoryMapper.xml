@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youlai.boot.app.model.mapper.AppPostCategoryMapper">
+
+    <!-- 获取帖子分类分页列表 -->
+    <select id="getAppPostCategoryPage" resultType="com.youlai.boot.app.model.vo.AppPostCategoryVO">
+        SELECT
+                id,
+                name,
+                description,
+                sort,
+                create_time,
+                is_deleted
+        FROM
+            app_post_category
+        <where>
+            <if test="isDeleted != null">
+                AND is_deleted = 0
+            </if>
+        </where>
+        ORDER BY sort ASC
+    </select>
+
+</mapper>
