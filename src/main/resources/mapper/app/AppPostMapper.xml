@@ -5,27 +5,33 @@
     <!-- 获取图文内容分页列表 -->
     <select id="getAppPostPage" resultType="com.youlai.boot.app.model.vo.AppPostVO">
         SELECT
-        p.id,
-        p.user_id,
-        p.title,
-        p.content,
-        p.like_count,
-        p.comment_count,
-        p.favorite_count,
-        p.create_time,
-        p.update_time,
-        p.status
+            p.id,
+            p.user_id,
+            p.category_id,
+            c.name as category_name,
+            p.title,
+            p.content,
+            p.like_count,
+            p.comment_count,
+            p.favorite_count,
+            p.create_time,
+            p.update_time,
+            p.status
         FROM
-        app_post p
+            app_post p
+            LEFT JOIN app_post_category c ON p.category_id = c.id
         <where>
             p.is_deleted = 0
-            <if test="queryParams.userId != null and queryParams.userId != ''">
+            <if test="queryParams.userId != null">
                 AND p.user_id = #{queryParams.userId}
+            </if>
+            <if test="queryParams.categoryId != null">
+                AND p.category_id = #{queryParams.categoryId}
             </if>
             <if test="queryParams.title != null and queryParams.title != ''">
                 AND p.title LIKE CONCAT('%', #{queryParams.title}, '%')
             </if>
-            <if test="queryParams.status != null and queryParams.userId != ''">
+            <if test="queryParams.status != null">
                 AND p.status = #{queryParams.status}
             </if>
             <if test="queryParams.postIds != null and queryParams.postIds.size() > 0">
@@ -33,22 +39,18 @@
                 <foreach collection="queryParams.postIds" item="postId" open="(" separator="," close=")">
                     #{postId}
                 </foreach>
+                <if test="queryParams.orderByPostIds">
+                    ORDER BY FIELD(p.id,
+                    <foreach collection="queryParams.postIds" item="postId" separator=",">
+                        #{postId}
+                    </foreach>
+                    )
+                </if>
             </if>
         </where>
-        <choose>
-            <!-- 按照传入的 postId 顺序返回数据 -->
-            <when test="queryParams.orderByPostIds == true and queryParams.postIds != null and queryParams.postIds.size() > 0">
-                ORDER BY FIELD(p.id,
-                <foreach collection="queryParams.postIds" item="postId" separator=",">
-                    #{postId}
-                </foreach>
-                )
-            </when>
-            <!-- 默认按更新时间倒序 -->
-            <otherwise>
-                ORDER BY GREATEST(p.create_time, p.update_time) DESC
-            </otherwise>
-        </choose>
+        <if test="queryParams.postIds == null or !queryParams.orderByPostIds">
+            ORDER BY p.create_time DESC
+        </if>
     </select>
 
 </mapper>

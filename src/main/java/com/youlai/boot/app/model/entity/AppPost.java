@@ -23,6 +23,12 @@ public class AppPost extends BaseEntity {
      * 发布图文的用户ID，关联到 app_user 表
      */
     private Long userId;
+    
+    /**
+     * 分类ID，关联到 app_post_category 表
+     */
+    private Long categoryId;
+    
     /**
      * 图文标题
      */
@@ -44,11 +50,11 @@ public class AppPost extends BaseEntity {
      */
     private Integer favoriteCount;
     /**
-     * 是否删除(1-删除，0-未删除)
-     */
-    private Integer isDeleted;
-    /**
      * 文章状态（0-待审核，1-审核通过，2-禁用）
      */
     private Integer status;
+    /**
+     * 是否删除（1-删除，0-未删除）
+     */
+    private Integer isDeleted;
 }

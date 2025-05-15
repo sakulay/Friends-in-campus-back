@@ -31,6 +31,9 @@ public class AppPostForm implements Serializable {
     @NotNull(message = "发布图文的用户ID，关联到 app_user 表不能为空")
     private Long userId;
 
+    @Schema(description = "分类ID，关联到 app_post_category 表")
+    private Long categoryId;
+
     @Schema(description = "图文标题")
     @Size(max=255, message="图文标题长度不能超过255个字符")
     private String title;
@@ -44,6 +47,9 @@ public class AppPostForm implements Serializable {
 
     @Schema(description = "评论数")
     private Integer commentCount = 0;
+
+    @Schema(description = "收藏数")
+    private Integer favoriteCount = 0;
 
     @Schema(description = "文章状态（0-待审核，1-审核通过，2-禁用）")
     private Integer status = 0;

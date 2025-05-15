@@ -18,5 +18,5 @@ import java.util.List;
 @Setter
 public class AppPostCategoryQuery extends BasePageQuery {
     @Schema(description = "是否删除")
-    private int isDeleted;
+    private Integer isDeleted = null;
 }

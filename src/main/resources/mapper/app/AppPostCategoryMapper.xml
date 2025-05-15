@@ -14,7 +14,7 @@
         FROM
             app_post_category
         <where>
-            <if test="isDeleted != null">
+            <if test="queryParams.isDeleted != null">
                 AND is_deleted = 0
             </if>
         </where>

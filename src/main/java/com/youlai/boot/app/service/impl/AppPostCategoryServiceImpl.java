@@ -68,6 +68,7 @@ public class AppPostCategoryServiceImpl extends ServiceImpl<AppPostCategoryMappe
     @Override
     public boolean saveAppPostCategory(AppPostCategoryForm formData) {
         AppPostCategory entity = appPostCategoryConverter.toEntity(formData);
+        entity.setIsDeleted(0);  // 设置为未删除状态
         return this.save(entity);
     }
     

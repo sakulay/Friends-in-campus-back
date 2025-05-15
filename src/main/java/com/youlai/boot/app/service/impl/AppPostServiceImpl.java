@@ -17,7 +17,6 @@ import com.youlai.boot.app.service.AppFriendService;
 import com.youlai.boot.app.service.AppPostImageService;
 import com.youlai.boot.core.security.model.AppUserDetails;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -32,10 +31,8 @@ import com.youlai.boot.app.model.query.AppPostQuery;
 import com.youlai.boot.app.model.vo.AppPostVO;
 import com.youlai.boot.app.converter.AppPostConverter;
 import com.youlai.boot.core.security.manager.AppJwtTokenManger;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -61,16 +58,8 @@ public class AppPostServiceImpl extends ServiceImpl<AppPostMapper, AppPost> impl
     private final AppPostImageConverter appPostImageConverter;
     private final AppPostImageService appPostImageService;
     private final AppFriendService appFriendService;
-    private final RedisTemplate<String, Object> redisTemplate;
     private final AppJwtTokenManger appJwtTokenManger;
     private final AppPostFavoritesMapper appPostFavoritesMapper;
-
-    private static final String POST_PAGE_KEY = "app:post:page:";
-    private static final String POST_DETAIL_KEY = "app:post:detail:";
-    private static final String POST_LIKE_COUNT_KEY = "app:post:like:count:";
-    private static final String POST_COMMENT_COUNT_KEY = "app:post:comment:count:";
-    private static final String POST_FAVORITE_COUNT_KEY = "app:post:favorite:count:";
-    private static final long CACHE_EXPIRE_TIME = 24; // 缓存过期时间（小时）
 
     /**
     * 获取图文内容分页列表
@@ -81,133 +70,93 @@ public class AppPostServiceImpl extends ServiceImpl<AppPostMapper, AppPost> impl
     @Override
     @Transactional
     public IPage<AppPostVO> getAppPostPage(AppPostQuery queryParams) {
-        String cacheKey = "";
-        IPage<AppPostVO> pageVO = null;
-        if(queryParams.getPostIds() == null) {
-            // 生成缓存键
-            cacheKey = POST_PAGE_KEY + queryParams.getPageNum() + ":" + queryParams.getPageSize() + ":" + queryParams.getStatus() + ":" + queryParams.getUserId() + ":" + queryParams.getTitle();
-            pageVO = (IPage<AppPostVO>) redisTemplate.opsForValue().get(cacheKey);
+        IPage<AppPostVO> pageVO = this.baseMapper.getAppPostPage(
+                new Page<>(queryParams.getPageNum(), queryParams.getPageSize()),
+                queryParams
+        );
+
+        // 获取所有的帖子ID
+        List<Long> postIds = pageVO.getRecords().stream()
+                .map(AppPostVO::getId)
+                .collect(Collectors.toList());
+
+        if (CollectionUtils.isEmpty(postIds)) {
+            return pageVO;
         }
 
-        if (pageVO == null) {
-            pageVO = this.baseMapper.getAppPostPage(
-                    new Page<>(queryParams.getPageNum(), queryParams.getPageSize()),
-                    queryParams
-            );
+        // 获取所有的用户ID
+        List<Long> userIds = pageVO.getRecords().stream()
+                .map(AppPostVO::getUserId)
+                .collect(Collectors.toList());
 
-            // 获取所有的帖子ID
-            List<Long> postIds = pageVO.getRecords().stream()
-                    .map(AppPostVO::getId)
-                    .collect(Collectors.toList());
-
-            if (CollectionUtils.isEmpty(postIds)) {
-                return pageVO;
-            }
-
-            // 获取所有的用户ID
-            List<Long> userIds = pageVO.getRecords().stream()
-                    .map(AppPostVO::getUserId)
-                    .collect(Collectors.toList());
-
-            // 根据用户ID查询friendSimpleVO
-            Map<Long, FriendSimpleVO> friendInfoMap = new HashMap<>();
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            authentication.getAuthorities().stream().forEach(authority -> {
-                if (authority.getAuthority().equals("ROLE_STUDENT")) {
-                    String id = ((AppUserDetails)authentication.getPrincipal()).getStudentId();
-                    Long studentId = Long.parseLong(id);
-                    for (Long userId : userIds) {
-                        FriendSimpleVO friendSimpleVO = appFriendService.getAppFriendInfo(studentId, userId);
-                        friendInfoMap.put(userId, friendSimpleVO);
-                    }
-                }
-            });
-
-            // 查询点赞数
-            Map<Long, Integer> likeCountMap = postIds.stream()
-                    .collect(Collectors.toMap(
-                            postId -> postId,
-                            postId -> {
-                                String likeCountKey = POST_LIKE_COUNT_KEY + postId;
-                                Object count = redisTemplate.opsForValue().get(likeCountKey);
-                                if (count == null) {
-                                    int dbCount = appPostLikeMapper.selectCount(
-                                            new LambdaQueryWrapper<AppPostLike>()
-                                                    .eq(AppPostLike::getPostId, postId)
-                                                    .eq(AppPostLike::getIsDeleted, 0)
-                                    ).intValue();
-                                    redisTemplate.opsForValue().set(likeCountKey, dbCount, CACHE_EXPIRE_TIME, TimeUnit.HOURS);
-                                    return dbCount;
-                                }
-                                return Integer.parseInt(count.toString());
-                            },
-                            (v1, v2) -> v1
-                    ));
-
-            // 查询评论数
-            Map<Long, Integer> commentCountMap = postIds.stream()
-                    .collect(Collectors.toMap(
-                            postId -> postId,
-                            postId -> {
-                                String commentCountKey = POST_COMMENT_COUNT_KEY + postId;
-                                Object count = redisTemplate.opsForValue().get(commentCountKey);
-                                if (count == null) {
-                                    int dbCount = appPostCommentMapper.selectCount(
-                                            new LambdaQueryWrapper<AppPostComment>()
-                                                    .eq(AppPostComment::getPostId, postId)
-                                                    .eq(AppPostComment::getIsDeleted, 0)
-                                                    .eq(AppPostComment::getStatus, 1)
-                                    ).intValue();
-                                    redisTemplate.opsForValue().set(commentCountKey, dbCount, CACHE_EXPIRE_TIME, TimeUnit.HOURS);
-                                    return dbCount;
-                                }
-                                return Integer.parseInt(count.toString());
-                            },
-                            (v1, v2) -> v1
-                    ));
-
-            // 查询收藏数
-            Map<Long, Integer> favoriteCountMap = postIds.stream()
-                    .collect(Collectors.toMap(
-                            postId -> postId,
-                            postId -> {
-                                String favoriteCountKey = POST_FAVORITE_COUNT_KEY + postId;
-                                Object count = redisTemplate.opsForValue().get(favoriteCountKey);
-                                if (count == null) {
-                                    int dbCount = appPostFavoritesMapper.selectCount(
-                                            new LambdaQueryWrapper<AppPostFavorites>()
-                                                    .eq(AppPostFavorites::getPostId, postId)
-                                                    .eq(AppPostFavorites::getIsDeleted, 0)
-                                    ).intValue();
-                                    redisTemplate.opsForValue().set(favoriteCountKey, dbCount, CACHE_EXPIRE_TIME, TimeUnit.HOURS);
-                                    return dbCount;
-                                }
-                                return Integer.parseInt(count.toString());
-                            },
-                            (v1, v2) -> v1
-                    ));
-
-            // 查询图片列表
-            Map<Long, List<AppPostImageVO>> imageListMap = appPostImageMapper.selectList(
-                    new LambdaQueryWrapper<AppPostImage>()
-                            .in(AppPostImage::getPostId, postIds)
-                            .eq(AppPostImage::getIsDeleted, 0)
-            ).stream().map(appPostImageConverter::toVOList)
-                    .collect(Collectors.groupingBy(AppPostImageVO::getPostId));
-
-            // 组装数据
-            pageVO.getRecords().forEach(post -> {
-                post.setLikeCount(likeCountMap.getOrDefault(post.getId(), 0));
-                post.setCommentCount(commentCountMap.getOrDefault(post.getId(), 0));
-                post.setFavoriteCount(favoriteCountMap.getOrDefault(post.getId(), 0));
-                post.setImageList(imageListMap.getOrDefault(post.getId(), Collections.emptyList()));
-                post.setUserInfo(friendInfoMap.get(post.getUserId()));
-            });
-            if(queryParams.getPostIds() == null) {
-                // 写入缓存
-                redisTemplate.opsForValue().set(cacheKey, pageVO, CACHE_EXPIRE_TIME, TimeUnit.HOURS);
+        // 根据用户ID查询friendSimpleVO
+        Map<Long, FriendSimpleVO> friendInfoMap = new HashMap<>();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getPrincipal() instanceof AppUserDetails) {
+            AppUserDetails userDetails = (AppUserDetails) authentication.getPrincipal();
+            for (Long userId : userIds) {
+                FriendSimpleVO friendSimpleVO = appFriendService.getAppFriendInfo(Long.parseLong(userDetails.getStudentId()), userId);
+                friendInfoMap.put(userId, friendSimpleVO);
             }
         }
+
+        // 查询点赞数
+        Map<Long, Integer> likeCountMap = postIds.stream()
+                .collect(Collectors.toMap(
+                        postId -> postId,
+                        postId -> appPostLikeMapper.selectCount(
+                                new LambdaQueryWrapper<AppPostLike>()
+                                        .eq(AppPostLike::getPostId, postId)
+                                        .eq(AppPostLike::getIsDeleted, 0)
+                        ).intValue(),
+                        (v1, v2) -> v1
+                ));
+
+        // 查询评论数
+        Map<Long, Integer> commentCountMap = postIds.stream()
+                .collect(Collectors.toMap(
+                        postId -> postId,
+                        postId -> appPostCommentMapper.selectCount(
+                                new LambdaQueryWrapper<AppPostComment>()
+                                        .eq(AppPostComment::getPostId, postId)
+                                        .eq(AppPostComment::getIsDeleted, 0)
+                                        .eq(AppPostComment::getStatus, 1)
+                        ).intValue(),
+                        (v1, v2) -> v1
+                ));
+
+        // 查询收藏数
+        Map<Long, Integer> favoriteCountMap = postIds.stream()
+                .collect(Collectors.toMap(
+                        postId -> postId,
+                        postId -> appPostFavoritesMapper.selectCount(
+                                new LambdaQueryWrapper<AppPostFavorites>()
+                                        .eq(AppPostFavorites::getPostId, postId)
+                                        .eq(AppPostFavorites::getIsDeleted, 0)
+                        ).intValue(),
+                        (v1, v2) -> v1
+                ));
+
+        // 查询图片列表
+        Map<Long, List<AppPostImageVO>> imageListMap = appPostImageMapper.selectList(
+                        new LambdaQueryWrapper<AppPostImage>()
+                                .in(AppPostImage::getPostId, postIds)
+                                .eq(AppPostImage::getIsDeleted, 0)
+                ).stream().map(appPostImageConverter::toVOList)
+                .collect(Collectors.groupingBy(AppPostImageVO::getPostId));
+
+        // 组装数据
+        pageVO.getRecords().forEach(post -> {
+            post.setLikeCount(likeCountMap.getOrDefault(post.getId(), 0));
+            post.setCommentCount(commentCountMap.getOrDefault(post.getId(), 0));
+            post.setFavoriteCount(favoriteCountMap.getOrDefault(post.getId(), 0));
+            post.setImageList(imageListMap.getOrDefault(post.getId(), Collections.emptyList()));
+            post.setUserInfo(friendInfoMap.get(post.getUserId()));
+        });
+            // if(queryParams.getPostIds() == null) {
+            //     // 写入缓存
+            //     redisTemplate.opsForValue().set(cacheKey, pageVO, CACHE_EXPIRE_TIME, TimeUnit.HOURS);
+            //
 
         return pageVO;
     }
@@ -220,27 +169,8 @@ public class AppPostServiceImpl extends ServiceImpl<AppPostMapper, AppPost> impl
      */
     @Override
     public AppPostForm getAppPostFormData(Long id) {
-        String cacheKey = POST_DETAIL_KEY + id;
-        AppPostForm formData = (AppPostForm) redisTemplate.opsForValue().get(cacheKey);
-
-        if (formData == null) {
-            AppPost entity = this.getById(id);
-            // 查询图片列表
-            List<AppPostImage> appPostImages = appPostImageMapper.selectList(
-                    new LambdaQueryWrapper<AppPostImage>()
-                            .eq(AppPostImage::getPostId, id)
-            );
-            List<AppPostImageForm> appPostImageForms = appPostImages.stream()
-                    .map(appPostImageConverter::toForm)
-                    .collect(Collectors.toList());
-            formData = appPostConverter.toForm(entity);
-            formData.setImageList(appPostImageForms);
-
-            // 写入缓存
-            redisTemplate.opsForValue().set(cacheKey, formData, CACHE_EXPIRE_TIME, TimeUnit.HOURS);
-        }
-
-        return formData;
+        AppPost entity = this.getById(id);
+        return appPostConverter.toForm(entity);
     }
     
     /**
@@ -269,11 +199,6 @@ public class AppPostServiceImpl extends ServiceImpl<AppPostMapper, AppPost> impl
             appPostImageService.saveBatch(appPostImages);
         }
 
-        // 清除相关缓存
-        if (saved) {
-            clearPostCache();
-        }
-
         return saved;
     }
     
@@ -287,43 +212,40 @@ public class AppPostServiceImpl extends ServiceImpl<AppPostMapper, AppPost> impl
     @Override
     @Transactional
     public boolean updateAppPost(Long id, AppPostForm formData) {
-        // 1.更新图文的文字内容部分
         AppPost entity = appPostConverter.toEntity(formData);
         entity.setId(id);
         boolean updated = this.updateById(entity);
-        if (!updated) {
-            return false;
-        }
 
-        // 2.获取formData的图片列表
-        List<AppPostImageForm> formDataImageList = formData.getImageList();
-        if (formDataImageList != null) {
-            // 3.从数据库获取文章对应的图片列表
-            List<AppPostImage> dbImageList = appPostImageMapper.selectList(
+        if (updated) {
+            // 处理图片
+            List<AppPostImage> existingImages = appPostImageMapper.selectList(
                     new LambdaQueryWrapper<AppPostImage>()
                             .eq(AppPostImage::getPostId, id)
+                            .eq(AppPostImage::getIsDeleted, 0)
             );
 
-            // 4.比较两个列表，需要分出要删除的，和新增的图片
-            List<Long> formDataImageIds = formDataImageList.stream()
+            List<Long> existingImageIds = existingImages.stream()
+                    .map(AppPostImage::getId).toList();
+
+            List<Long> newImageIds = formData.getImageList().stream()
                     .map(AppPostImageForm::getId)
                     .filter(Objects::nonNull).toList();
 
-            List<AppPostImage> imagesToDelete = dbImageList.stream()
-                    .filter(dbImage -> !formDataImageIds.contains(dbImage.getId())).toList();
+            // 找出需要删除的图片
+            List<Long> imagesToDelete = existingImageIds.stream()
+                    .filter(id1 -> !newImageIds.contains(id1))
+                    .collect(Collectors.toList());
 
-            List<AppPostImageForm> imagesToAdd = formDataImageList.stream()
+            // 找出需要新增的图片
+            List<AppPostImageForm> imagesToAdd = formData.getImageList().stream()
                     .filter(form -> form.getId() == null).toList();
 
-            // 5.删除要删除的图片
+            // 删除不再需要的图片
             if (!imagesToDelete.isEmpty()) {
-                List<Long> deleteIds = imagesToDelete.stream()
-                        .map(AppPostImage::getId)
-                        .collect(Collectors.toList());
-                appPostImageMapper.deleteBatchIds(deleteIds);
+                appPostImageMapper.deleteBatchIds(imagesToDelete);
             }
 
-            // 6.新增要新增的图片
+            // 添加新的图片
             if (!imagesToAdd.isEmpty()) {
                 List<AppPostImage> newImages = imagesToAdd.stream()
                         .map(form -> {
@@ -334,11 +256,6 @@ public class AppPostServiceImpl extends ServiceImpl<AppPostMapper, AppPost> impl
                         .collect(Collectors.toList());
                 appPostImageService.saveBatch(newImages);
             }
-        }
-
-        // 清除相关缓存
-        if (updated) {
-            clearPostCache();
         }
 
         return true;
@@ -361,14 +278,7 @@ public class AppPostServiceImpl extends ServiceImpl<AppPostMapper, AppPost> impl
         // 删除对应的图片
         appPostImageMapper.delete(new LambdaQueryWrapper<AppPostImage>().in(AppPostImage::getPostId, idList));
         
-        boolean deleted = this.removeByIds(idList);
-
-        // 清除相关缓存
-        if (deleted) {
-            clearPostCache();
-        }
-
-        return deleted;
+        return this.removeByIds(idList);
     }
 
     /**
@@ -386,49 +296,6 @@ public class AppPostServiceImpl extends ServiceImpl<AppPostMapper, AppPost> impl
             return false;
         }
         entity.setStatus(status);
-        boolean updated = this.updateById(entity);
-
-        // 清除相关缓存
-        if (updated) {
-            clearPostCache();
-        }
-
-        return updated;
+        return this.updateById(entity);
     }
-
-    /**
-     * 清除帖子相关的所有缓存
-     */
-    private void clearPostCache() {
-        // 清除帖子列表缓存
-        Set<String> pageKeys = redisTemplate.keys(POST_PAGE_KEY + "*");
-        if (pageKeys != null && !pageKeys.isEmpty()) {
-            redisTemplate.delete(pageKeys);
-        }
-
-        // 清除帖子详情缓存
-        Set<String> detailKeys = redisTemplate.keys(POST_DETAIL_KEY + "*");
-        if (detailKeys != null && !detailKeys.isEmpty()) {
-            redisTemplate.delete(detailKeys);
-        }
-
-        // 清除点赞数缓存
-        Set<String> likeCountKeys = redisTemplate.keys(POST_LIKE_COUNT_KEY + "*");
-        if (likeCountKeys != null && !likeCountKeys.isEmpty()) {
-            redisTemplate.delete(likeCountKeys);
-        }
-
-        // 清除评论数缓存
-        Set<String> commentCountKeys = redisTemplate.keys(POST_COMMENT_COUNT_KEY + "*");
-        if (commentCountKeys != null && !commentCountKeys.isEmpty()) {
-            redisTemplate.delete(commentCountKeys);
-        }
-
-        // 清除收藏数缓存
-        Set<String> favoriteCountKeys = redisTemplate.keys(POST_FAVORITE_COUNT_KEY + "*");
-        if (favoriteCountKeys != null && !favoriteCountKeys.isEmpty()) {
-            redisTemplate.delete(favoriteCountKeys);
-        }
-    }
-
 }
