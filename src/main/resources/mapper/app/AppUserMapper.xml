@@ -13,10 +13,12 @@
         create_time,
         create_by,
         update_time,
-        update_by
+        update_by,
+        is_deleted
         FROM
         app_user
         <where>
+            is_deleted = 0
         </where>
     </select>
 
@@ -29,6 +31,7 @@
         From app_user
         <where>
             student_id = #{studentId}
+            AND is_deleted = 0
         </where>
     </select>
 

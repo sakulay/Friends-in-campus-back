@@ -71,5 +71,10 @@ public class AppUser implements Serializable {
     @JsonInclude(value = JsonInclude.Include.NON_NULL)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updateTime;
-
+    
+    /**
+     * 是否删除（1-删除，0-未删除）
+     */
+    @TableLogic(value = "0", delval = "1")
+    private Integer isDeleted;
 }

@@ -65,6 +65,8 @@
                     AND f.friend_id = #{studentId}
         WHERE
             u.student_id = #{friendId}
+                AND
+            u.is_deleted = 0
     </select>
 
 </mapper>

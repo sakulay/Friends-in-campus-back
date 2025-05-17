@@ -27,6 +27,9 @@ import java.util.List;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.StrUtil;
 import org.springframework.transaction.annotation.Transactional;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.youlai.boot.app.model.entity.AppUserProfile;
+import com.youlai.boot.app.model.form.UpdatePasswordForm;
 
 /**
  * 用户服务实现类
@@ -76,6 +79,7 @@ public class AppUserServiceImpl extends ServiceImpl<AppUserMapper, AppUser> impl
     @Override
     public boolean saveAppUser(AppUserForm formData) {
         AppUser entity = appUserConverter.toEntity(formData);
+        entity.setIsDeleted(0); // 设置为未删除状态
         return this.save(entity);
     }
     
@@ -117,12 +121,27 @@ public class AppUserServiceImpl extends ServiceImpl<AppUserMapper, AppUser> impl
      * @return
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean deleteAppUsers(String ids) {
         Assert.isTrue(StrUtil.isNotBlank(ids), "删除的用户数据为空");
-        // 逻辑删除
+        
+        // 获取要删除的用户ID列表
         List<Long> idList = Arrays.stream(ids.split(","))
                 .map(Long::parseLong)
                 .toList();
+        
+        // 获取要删除的用户列表
+        List<AppUser> users = this.listByIds(idList);
+        
+        // 删除用户信息
+        for (AppUser user : users) {
+            // 根据 studentId 删除用户信息
+            LambdaQueryWrapper<AppUserProfile> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(AppUserProfile::getStudentId, user.getStudentId());
+            appUserProfileService.remove(wrapper);
+        }
+        
+        // 逻辑删除用户 - MyBatis-Plus 会自动处理逻辑删除
         return this.removeByIds(idList);
     }
 
@@ -159,6 +178,7 @@ public class AppUserServiceImpl extends ServiceImpl<AppUserMapper, AppUser> impl
             else throw new BusinessException(ResultCode.USER_ALREADY_REGISTERED);
         }
         // 2.未注册过或未提交过申请，进行注册
+        appUserForm.setIsDeleted(0); // 设置为未删除状态
         this.baseMapper.insert(appUserConverter.toEntity(appUserForm));
     }
 
@@ -182,9 +202,38 @@ public class AppUserServiceImpl extends ServiceImpl<AppUserMapper, AppUser> impl
             //3.认证通过后，初始化学生个人信息：studentId、nickName、初始avatar、bio
             AppUserProfileForm appUserProfileForm = new AppUserProfileForm();
             appUserProfileForm.setStudentId(studengId);
-            appUserProfileForm.setAvatar("http://111.230.102.82:40061/i/2025/04/10/xk2ltx.png");
+            appUserProfileForm.setAvatar("http://111.230.102.82:40061/i/2025/05/15/12f2f78.png");
             appUserProfileForm.setBio(MyConstans.APP_USER_PROFILE_BIO);
             return appUserProfileService.saveAppUserProfile(appUserProfileForm);
         } else throw new BusinessException(ResultCode.USER_NON_EXISI);
+    }
+
+    /**
+     * 修改密码
+     *
+     * @param formData 修改密码表单对象
+     * @return true|false
+     */
+    @Override
+    public boolean updatePassword(UpdatePasswordForm formData) {
+        // 1. 获取用户信息
+        AppUserAuthInfo userAuthInfo = this.getUserAuthInfo(String.valueOf(formData.getStudentId()));
+        if (userAuthInfo == null) {
+            throw new BusinessException(ResultCode.USER_NON_EXISI);
+        }
+
+        // 2. 验证旧密码
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        if (!passwordEncoder.matches(formData.getOldPassword(), userAuthInfo.getPassword())) {
+            throw new BusinessException(ResultCode.USER_PASSWORD_ERROR);
+        }
+
+        // 3. 更新密码
+        UpdateWrapper<AppUser> updateWrapper = new UpdateWrapper<>();
+        updateWrapper
+                .eq("student_id", formData.getStudentId())
+                .set("password", passwordEncoder.encode(formData.getNewPassword()));
+        
+        return this.update(null, updateWrapper);
     }
 }

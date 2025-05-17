@@ -36,4 +36,6 @@ public class AppUserVO implements Serializable {
     private LocalDateTime createTime;
     @Schema(description = "更新时间")
     private LocalDateTime updateTime;
+    @Schema(description = "是否删除（1-删除，0-未删除）")
+    private Integer isDeleted;
 }

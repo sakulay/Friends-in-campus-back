@@ -41,4 +41,7 @@ public class AppUserForm implements Serializable {
 
     @Schema(description = "图片删除api")
     private String deleteUrl;
+    
+    @Schema(description = "是否删除（1-删除，0-未删除）")
+    private Integer isDeleted;
 }

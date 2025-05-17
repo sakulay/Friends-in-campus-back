@@ -8,6 +8,7 @@ import com.youlai.boot.app.model.vo.AppUserVO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.youlai.boot.system.model.dto.UserAuthInfo;
+import com.youlai.boot.app.model.form.UpdatePasswordForm;
 
 /**
  * 用户服务类
@@ -75,4 +76,12 @@ public interface AppUserService extends IService<AppUser> {
      * @param studengId 审核通过的学生id
      */
     boolean verify(Long studengId);
+
+    /**
+     * 修改密码
+     *
+     * @param formData 修改密码表单对象
+     * @return true|false
+     */
+    boolean updatePassword(UpdatePasswordForm formData);
 }

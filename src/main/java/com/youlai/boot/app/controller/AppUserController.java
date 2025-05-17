@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.youlai.boot.app.model.form.AppUserForm;
+import com.youlai.boot.app.model.form.UpdatePasswordForm;
 import com.youlai.boot.app.model.query.AppUserQuery;
 import com.youlai.boot.app.model.vo.AppUserVO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -100,6 +101,18 @@ public class AppUserController  {
             @Parameter(description = "学生用户ID") @PathVariable Long studentId
     ) {
         boolean result = appUserService.verify(studentId);
+        return Result.judge(result);
+    }
+
+    @Operation(summary = "修改密码")
+    @PutMapping("/{studentId}/password")
+    @PreAuthorize("@ss.hasPerm('app:appUser:edit')")
+    public Result<Void> updatePassword(
+            @Parameter(description = "学号") @PathVariable Long studentId,
+            @RequestBody @Validated UpdatePasswordForm formData
+    ) {
+        formData.setStudentId(studentId);
+        boolean result = appUserService.updatePassword(formData);
         return Result.judge(result);
     }
 }
